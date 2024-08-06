@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.react-datepicker__tab-loop {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.ant-modal-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 30px !important;
+}
+
+.ant-pagination-options {
+    display: none !important;
+}
+
+.swal2-actions {
+    flex-direction: row-reverse;
+}
+
+.container-wrapper {
+    @apply w-full bg-white h-screen shadow-default
+}
+
+
+.container-wrapper-auto {
+    @apply w-full bg-white h-auto shadow-default
+}
+
+
+.flex-center {
+    @apply flex items-center justify-center
+}
+
+.flex-start {
+    @apply flex items-center justify-start
+}
+
+
+.flex-between {
+    @apply flex items-center justify-between
+}
+
+.hidden-date-picker {
+    display: none;
+}
+
+.infoWallet {
+    @apply font-semibold font-satoshi text-lg
+}
