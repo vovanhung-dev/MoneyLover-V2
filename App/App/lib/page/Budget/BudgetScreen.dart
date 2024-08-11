@@ -1,9 +1,10 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shoehubapp/data/api.dart';
-
-import '../../data/BudgetAPI.dart';
-import '../../model/Budget.dart';
+import 'package:shoehubapp/data/BudgetAPI.dart';
+import 'package:shoehubapp/model/Budget.dart';
+import '../../data/CategoryAPI.dart';
+import '../../data/WalletAPI.dart';
+import 'CreateBudgetScreen.dart';
 
 class BudgetScreen extends StatefulWidget {
   @override
@@ -17,8 +18,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   void initState() {
     super.initState();
-    budgetAPI = BudgetAPI(API()); // Initialize Dio and BudgetAPI
-    _budgetsFuture = budgetAPI.getBudgets(); // Fetch all budgets
+    budgetAPI = BudgetAPI(API()); // Khởi tạo API và BudgetAPI
+    _fetchBudgets(); // Lấy tất cả ngân sách
+  }
+
+  Future<void> _fetchBudgets() async {
+    setState(() {
+      _budgetsFuture = budgetAPI.getBudgets();
+    });
   }
 
   @override
@@ -26,6 +33,24 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Budgets'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateBudgetScreen(
+                    budgetAPI: budgetAPI,
+                    categoryAPI: CategoryAPI(API()), // Thay thế bằng API đúng
+                    walletAPI: WalletAPI(API()), // Thay thế bằng API đúng
+                  ),
+                ),
+              );
+              _fetchBudgets(); // Cập nhật danh sách sau khi tạo mới
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<Budget>>(
         future: _budgetsFuture,
@@ -46,7 +71,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   title: Text(budget.name),
                   subtitle: Text('Amount: ${budget.amount}'),
                   onTap: () {
-                    // Handle budget tap if needed
+                    // Xử lý khi nhấn vào ngân sách, nếu cần
                   },
                 );
               },

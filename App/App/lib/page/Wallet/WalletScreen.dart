@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';  // Import package intl
-import '../data/WalletAPI.dart';
-import '../model/Wallet.dart';
-import '../data/api.dart';
+import '../../data/WalletAPI.dart';
+import '../../model/Wallet.dart';
+import '../../data/api.dart';
 
 class WalletScreen extends StatefulWidget {
   @override

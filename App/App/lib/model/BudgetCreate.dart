@@ -1,29 +1,35 @@
 class BudgetCreate {
-  final double amount;
-  final String category;
-  final bool repeat;
-  final String name;
-  final bool isReplace;
-  final bool overWrite;
+  final double amount; // Amount in integer format
+  final String category; // Category ID
+  final bool repeat; // Repeat status
+  final String name; // Name of the budget
+  final String amountDisplay; // Display amount as String
+  final String wallet; // Wallet ID
+  final DateTime periodStart; // Start period
+  final DateTime periodEnd; // End period
 
   BudgetCreate({
     required this.amount,
     required this.category,
     required this.repeat,
     required this.name,
-    required this.isReplace,
-    required this.overWrite,
+    required this.amountDisplay,
+    required this.wallet,
+    required this.periodStart,
+    required this.periodEnd,
   });
 
   // Factory constructor to create a BudgetCreate object from JSON
   factory BudgetCreate.fromJson(Map<String, dynamic> json) {
     return BudgetCreate(
-      amount: (json['amount'] as num).toDouble(),
+      amount: (json['amount'] as num).toDouble(), // Convert to double if necessary
       category: json['category'] as String,
-      repeat: json['repeat'] as bool,
+      repeat: json['repeat_bud'] as bool, // Map to 'repeat_bud'
       name: json['name'] as String,
-      isReplace: json['isReplace'] as bool,
-      overWrite: json['overWrite'] as bool,
+      amountDisplay: json['amountDisplay'] as String, // Amount display as String
+      wallet: json['wallet'] as String, // Wallet ID
+      periodStart: DateTime.parse(json['period_start'] as String), // Parse DateTime
+      periodEnd: DateTime.parse(json['period_end'] as String), // Parse DateTime
     );
   }
 
@@ -32,10 +38,12 @@ class BudgetCreate {
     return {
       'amount': amount,
       'category': category,
-      'repeat': repeat,
+      'repeat_bud': repeat, // Map to 'repeat_bud'
       'name': name,
-      'isReplace': isReplace,
-      'overWrite': overWrite,
+      'amountDisplay': amountDisplay,
+      'wallet': wallet,
+      'period_start': periodStart.toIso8601String(), // Convert DateTime to String
+      'period_end': periodEnd.toIso8601String(), // Convert DateTime to String
     };
   }
 }
