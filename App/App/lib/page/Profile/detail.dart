@@ -12,6 +12,7 @@ class Detail extends StatefulWidget {
 
 class _DetailState extends State<Detail> {
   late User user;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -24,111 +25,106 @@ class _DetailState extends State<Detail> {
     String strUser = pref.getString('user')!;
 
     user = User.fromJson(jsonDecode(strUser));
-    setState(() {});
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    TextStyle infoStyle = const TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.bold,
-      color: Color(0xFF0C2D48),
-    );
-
-    TextStyle labelStyle = const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: Color(0xFF0C2D48),
-    );
-
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.teal[50], // Tông màu nền tươi sáng
+      appBar: AppBar(
+        backgroundColor: Colors.teal,
+        title: const Text('Profile'),
+        centerTitle: true,
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 80,
+              backgroundColor: Colors.teal,
+              child: Text(
+                user.username![0].toUpperCase(),
+                style: TextStyle(
+                  fontSize: 50,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              user.username!,
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.teal[800],
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              user.email!,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.teal[600],
+              ),
+            ),
+            const SizedBox(height: 30),
+            Expanded(
+              child: ListView(
                 children: [
-                  const SizedBox(height: 8),
-                  Text(
+                  _buildCard(
+                    Icons.email,
+                    "Email",
+                    user.email!,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCard(
+                    Icons.person,
+                    "Tên đăng nhập",
                     user.username!,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      color: Color(0xFF0C2D48),
-                      fontWeight: FontWeight.w800,
-                    ),
                   ),
                 ],
               ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Thông tin cá nhân",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildRow(Icons.email, "Email", user.email!, infoStyle, labelStyle),
-                      const SizedBox(height: 16),
-                      _buildRow(Icons.person, "Tên đăng nhập", user.username!, infoStyle, labelStyle),
-                      const SizedBox(height: 16),
-                      const SizedBox(height: 32),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRow(IconData icon, String label, String value, TextStyle infoStyle, TextStyle labelStyle) {
-    return Row(
-      children: [
-        Icon(
+  Widget _buildCard(IconData icon, String title, String subtitle) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Icon(
           icon,
-          size: 40,
-          color: const Color(0xFF0C2D48),
+          color: Colors.teal,
+          size: 30,
         ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: labelStyle,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: infoStyle,
-            ),
-          ],
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.teal[800],
+          ),
         ),
-      ],
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: Colors.teal[600],
+          ),
+        ),
+      ),
     );
   }
 }
