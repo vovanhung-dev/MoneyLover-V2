@@ -23,12 +23,12 @@ class BudgetAPI {
     }
   }
 
-  // Lấy danh sách ngân sách
-  Future<List<Budget>> getBudgets() async {
-    await setToken(); // Ensure token is set
+  // Lấy danh sách ngân sách theo ví đã chọn
+  Future<List<Budget>> getBudgets(String walletId) async {
+    await setToken(); // Đảm bảo token được thiết lập
     try {
       final Response res = await api.sendRequest.get(
-        'budgets?wallet=bff6e3e5-40dd-4e0f-a6c6-29db590bb616',
+        'budgets?wallet=$walletId',
         options: Options(
           headers: {
             'Content-Type': 'application/json',
@@ -38,9 +38,12 @@ class BudgetAPI {
       );
 
       if (res.statusCode == 200) {
-        // Assuming response is a JSON object with a "data" key
         final Map<String, dynamic> responseData = res.data;
-        final List<dynamic> data = responseData['data'] as List<dynamic>; // Adjust this based on actual key
+        final List<dynamic> data = responseData['data'] as List<dynamic>;
+
+        // Print the data to see the raw data returned from the API
+        print('Fetched data: $data');
+
         return data.map((item) => Budget.fromJson(item)).toList();
       } else {
         throw Exception('Failed to load budgets');
@@ -50,6 +53,8 @@ class BudgetAPI {
       throw e;
     }
   }
+
+
 
   // Thêm ngân sách mới
   Future<String> addBudget(BudgetCreate budget) async {

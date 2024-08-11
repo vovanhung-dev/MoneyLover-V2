@@ -16,9 +16,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize Dio and CategoryAPI
     categoryAPI = CategoryAPI(API());
-    _categoriesFuture = categoryAPI.fetchAllCategories(); // Fetch all categories
+    _categoriesFuture = categoryAPI.fetchAllCategories();
   }
 
   void _navigateToCreateCategory() {
@@ -26,7 +25,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
       context,
       MaterialPageRoute(builder: (context) => CreateCategoryScreen()),
     ).then((_) {
-      // Refresh the category list after returning from CreateCategoryScreen
       setState(() {
         _categoriesFuture = categoryAPI.fetchAllCategories();
       });
@@ -37,10 +35,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Categories'),
+        backgroundColor: Colors.teal,
+        title: const Text('Categories', style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, size: 30, color: Colors.white),
             onPressed: _navigateToCreateCategory,
           ),
         ],
@@ -57,21 +56,49 @@ class _CategoryScreenState extends State<CategoryScreen> {
           } else {
             final categories = snapshot.data!;
             return ListView.builder(
+              padding: EdgeInsets.all(8.0),
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
-                return ListTile(
-                  leading: category.categoryIcon != null
-                      ? Image.network(
-                    category.categoryIcon!, // Display icon if available
-                  )
-                      : null,
-                  title: Text(category.name), // Display category name
-                  subtitle: Text(category.categoryType ?? ''), // Display category type if available
-                  onTap: () {
-                    // Handle category tap if needed
-                    // For example, navigate to another screen with details
-                  },
+                return Card(
+                  elevation: 6,
+                  margin: EdgeInsets.symmetric(vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  color: Colors.teal[50],
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(16.0),
+                    leading: category.categoryIcon != null
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(
+                        category.categoryIcon!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                        : CircleAvatar(
+                      backgroundColor: Colors.teal,
+                      child: Icon(Icons.category, size: 30, color: Colors.white),
+                    ),
+                    title: Text(
+                      category.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.0,
+                        color: Colors.teal[800],
+                      ),
+                    ),
+                    subtitle: Text(
+                      category.categoryType ?? 'No type specified',
+                      style: TextStyle(color: Colors.teal[600]),
+                    ),
+                    onTap: () {
+                      // Handle category tap if needed
+                    },
+                  ),
                 );
               },
             );

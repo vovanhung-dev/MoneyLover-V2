@@ -46,7 +46,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
 
   Future<void> _fetchCategoriesAndWallets() async {
     try {
-      final categories = await widget.categoryAPI.fetchAllCategories();
+      final categories = await widget.categoryAPI.fetchCategories();
       final wallets = await widget.walletAPI.getWallets(1);
 
       setState(() {

@@ -23,12 +23,11 @@ class CategoryAPI {
   }
 
   // Fetch categories by type
-  Future<List<Category>> fetchCategories(String type) async {
+  Future<List<Category>> fetchCategories() async {
     await setToken(); // Ensure token is set
     try {
       final Response res = await api.sendRequest.get(
         'categories',
-        queryParameters: {'type': type},
         options: Options(
           headers: {
             'Content-Type': 'application/json',

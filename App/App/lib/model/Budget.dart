@@ -23,15 +23,25 @@ class Budget {
 
   // Factory constructor to create a Budget object from JSON
   factory Budget.fromJson(Map<String, dynamic> json) {
+    // Ensure no null values for critical fields
+    final String id = json['id'] ?? '';
+    final double amount = (json['amount'] as num?)?.toDouble() ?? 0.0;
+    final DateTime periodStart = DateTime.tryParse(json['periodStart'] as String? ?? '') ?? DateTime.now();
+    final DateTime periodEnd = DateTime.tryParse(json['periodEnd'] as String? ?? '') ?? DateTime.now();
+    final bool repeat = json['repeat'] ?? false;
+    final String wallet = json['wallet'] ?? '';
+    final String name = json['name'] ?? '';
+    final Category category = Category.fromJson(json['category'] as Map<String, dynamic>? ?? {});
+
     return Budget(
-      id: json['id'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      periodStart: DateTime.parse(json['periodStart'] as String),
-      periodEnd: DateTime.parse(json['periodEnd'] as String),
-      repeat: json['repeat'] as bool,
-      wallet: json['wallet'] as String,
-      name: json['name'] as String,
-      category: Category.fromJson(json['category'] as Map<String, dynamic>),
+      id: id,
+      amount: amount,
+      periodStart: periodStart,
+      periodEnd: periodEnd,
+      repeat: repeat,
+      wallet: wallet,
+      name: name,
+      category: category,
     );
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';  // Import package intl
+import 'package:intl/intl.dart'; // Import package intl
 import '../../data/WalletAPI.dart';
 import '../../model/Wallet.dart';
 import '../../data/api.dart';
@@ -29,7 +29,6 @@ class _WalletScreenState extends State<WalletScreen> {
 
     try {
       final walletResponse = await _walletAPI.getWallets(0); // Fetch page 0
-      print("Wallet Response: ${walletResponse.data}"); // Debug print
 
       if (walletResponse.data?.content != null) {
         setState(() {
@@ -37,23 +36,20 @@ class _WalletScreenState extends State<WalletScreen> {
           _isLoading = false;
         });
       } else {
-        print("Response content is null or empty");
         _showSnackBar("No wallets found");
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
-      print("Error fetching wallets: $e");
+      _showSnackBar("Failed to load wallets");
       setState(() {
         _isLoading = false;
       });
-      _showSnackBar("Failed to load wallets");
     }
   }
 
   Future<void> _deleteWallet(String walletId, int index) async {
-    // Check if the wallet to delete is the primary wallet
     if (_wallets[index].main) {
       _showSnackBar("Cannot delete the primary wallet!");
       return;
@@ -64,11 +60,10 @@ class _WalletScreenState extends State<WalletScreen> {
       _showSnackBar(result);
       if (result.contains("deleted successfully")) {
         setState(() {
-          _wallets.removeAt(index); // Remove the wallet from the list
+          _wallets.removeAt(index);
         });
       }
     } catch (e) {
-      print("Failed to delete wallet: $e");
       _showSnackBar("Failed to delete wallet");
     }
   }
@@ -157,7 +152,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   id: isUpdate ? wallet!.id : '', // Use existing ID for update
                   name: _nameController.text,
                   balance: double.tryParse(_balanceController.text) ?? 0.0,
-                  amountDisplay: _balanceController.text, // Use balance as amountDisplay
+                  amountDisplay: _balanceController.text,
                   currency: _selectedCurrency,
                   type: _selectedType,
                   main: isUpdate ? wallet!.main : false,
@@ -167,7 +162,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     : await _walletAPI.addWallet(newWallet);
                 _showSnackBar(result);
                 if (result.contains(isUpdate ? "updated successfully" : "added successfully")) {
-                  _fetchWallets(); // Refresh wallet list
+                  _fetchWallets();
                   Navigator.of(context).pop();
                 }
               }
@@ -188,10 +183,9 @@ class _WalletScreenState extends State<WalletScreen> {
       final result = await _walletAPI.setPrimaryWallet(wallet.id);
       _showSnackBar(result);
       if (result.contains("Primary wallet set successfully")) {
-        await _fetchWallets(); // Fetch wallets again to get the updated primary wallet status
+        await _fetchWallets();
       }
     } catch (e) {
-      print("Failed to update wallet: $e");
       _showSnackBar("Failed to update wallet");
     }
   }
@@ -214,10 +208,14 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Wallets"),
+        backgroundColor: Colors.teal, // Bright teal color for the AppBar
+        title: Text(
+          "Wallets",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, size: 30, color: Colors.white),
             onPressed: () => _addOrUpdateWallet(),
           ),
         ],
@@ -232,37 +230,45 @@ class _WalletScreenState extends State<WalletScreen> {
             key: Key(wallet.id),
             direction: wallet.main
                 ? DismissDirection.none
-                : DismissDirection.endToStart, // Disable swipe if primary wallet
+                : DismissDirection.endToStart,
             onDismissed: (direction) {
               if (!wallet.main) {
-                _deleteWallet(wallet.id, index); // Pass index to remove directly
+                _deleteWallet(wallet.id, index);
               }
             },
             background: Container(
-              color: Colors.red,
+              color: Colors.redAccent, // Bright red color for delete action
               alignment: Alignment.centerRight,
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Icon(Icons.delete, color: Colors.white),
+              child: Icon(Icons.delete, color: Colors.white, size: 30),
             ),
             child: Card(
-              elevation: 4,
+              elevation: 5, // Slightly increased elevation
               margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0), // Rounded corners
+              ),
+              color: Colors.teal[50], // Light teal color for card background
               child: ListTile(
+                contentPadding: EdgeInsets.all(16.0),
                 leading: Icon(Icons.account_balance_wallet,
-                    size: 40, color: Colors.blue),
-                title: Text(wallet.name),
+                    size: 40, color: Colors.teal),
+                title: Text(
+                  wallet.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0,
+                    color: Colors.teal[800],
+                  ),
+                ),
                 subtitle: Text(
-                    "Balance: ${_formatCurrency(wallet.balance)} ${wallet.currency}"),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(wallet.main
-                          ? Icons.star
-                          : Icons.star_border),
-                      onPressed: () => _setPrimaryWallet(wallet),
-                    ),
-                  ],
+                  "Balance: ${_formatCurrency(wallet.balance)} ${wallet.currency}",
+                  style: TextStyle(color: Colors.teal[600]),
+                ),
+                trailing: IconButton(
+                  icon: Icon(wallet.main ? Icons.star : Icons.star_border),
+                  color: wallet.main ? Colors.amber : Colors.grey,
+                  onPressed: () => _setPrimaryWallet(wallet),
                 ),
               ),
             ),
