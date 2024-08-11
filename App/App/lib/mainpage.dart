@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:shoehubapp/page/Budget/BudgetScreen.dart';
 import 'package:shoehubapp/page/Category/CategoryScreen.dart';
 import 'package:shoehubapp/page/WalletScreen.dart';
 import 'package:shoehubapp/page/NotificationScreen.dart';
@@ -64,8 +65,8 @@ class _MainpageState extends State<Mainpage> {
         widget =  WalletScreen();
         break;
       case 2:
-        nameWidgets = "Cá Nhân";
-        widget = const FolderManagement();
+        nameWidgets = "Budget";
+        widget = BudgetScreen();
         break;
       case 3:
         nameWidgets = "Chatbot";
@@ -175,8 +176,8 @@ class _MainpageState extends State<Mainpage> {
             label: 'Wallet',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Cá Nhân',
+            icon: Icon(Icons.account_balance),
+            label: 'Budget',
           ),
           BottomNavigationBarItem(
               icon: Stack(
