@@ -3,7 +3,6 @@ import 'package:shoehubapp/model/user.dart';
 
 import '/data/api.dart';
 import '/data/sharepre.dart';
-import 'ForgotPasswordScreen.dart';
 import 'register.dart';
 import '/mainpage.dart';
 import 'package:flutter/material.dart';

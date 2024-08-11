@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:shoehubapp/page/Budget/BudgetScreen.dart';
 import 'package:shoehubapp/page/Category/CategoryScreen.dart';
 import 'package:shoehubapp/page/Wallet/WalletScreen.dart';
-import 'package:shoehubapp/page/NotificationScreen.dart';
 import 'package:shoehubapp/page/StatisticsScreen.dart';
 import 'package:shoehubapp/page/Chatbox/chat_screen.dart';
 
@@ -74,7 +73,7 @@ class _MainpageState extends State<Mainpage> {
         break;
       case 4:
         nameWidgets = "Thông báo";
-        widget = NotificationScreen();
+        widget = ChatScreen();
         break;
       case 5:
         nameWidgets = "Trang cá nhân";
