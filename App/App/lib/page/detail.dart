@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/user.dart';
-import 'auth/ChangePasswordScreen.dart';
 
 class Detail extends StatefulWidget {
   const Detail({Key? key}) : super(key: key);
@@ -51,14 +50,6 @@ class _DetailState extends State<Detail> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ClipOval(
-                    child: Image.network(
-                      user.image!,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
                   const SizedBox(height: 8),
                   Text(
                     user.username!,
@@ -96,38 +87,12 @@ class _DetailState extends State<Detail> {
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const Divider(height: 16, color: Colors.grey),
-                      _buildRow(Icons.info_sharp, "ID", user.id!, infoStyle, labelStyle),
                       const SizedBox(height: 16),
                       _buildRow(Icons.email, "Email", user.email!, infoStyle, labelStyle),
                       const SizedBox(height: 16),
-                      _buildRow(Icons.phone, "Số điện thoại", user.phone!, infoStyle, labelStyle),
-                      const SizedBox(height: 16),
                       _buildRow(Icons.person, "Tên đăng nhập", user.username!, infoStyle, labelStyle),
                       const SizedBox(height: 16),
-                      _buildRow(Icons.account_box, "Vai trò", user.role!, infoStyle, labelStyle),
                       const SizedBox(height: 32),
-                      Center(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.orange,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
-                            );
-                          },
-                          child: const Text(
-                            'Đổi mật khẩu',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 16),
                     ],
                   ),

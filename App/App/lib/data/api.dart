@@ -1,10 +1,11 @@
 import 'dart:convert';
 
 
-import '/model/register.dart';
+import '../model/Signup.dart';
 import '/model/user.dart';
 import 'package:dio/dio.dart';
 
+import '../response/login_response.dart';
 import 'sharepre.dart';
 
 class API {
@@ -52,66 +53,82 @@ class APIRepository {
   }
 
 
-  Future<String> register(Signup user) async {
+  Future<String> register(Signup signup) async {
     try {
-      final body = jsonEncode({
-        "username": user.username,
-        "email": user.email,
-        "password": user.password,
-        "phone": user.phone,
-        "role": user.role,
-        "status": user.status
-      });
-      Response res = await api.sendRequest.post('auth/register',
-          options: Options(
-            headers: header('no token'),
-            contentType: Headers.jsonContentType,
-          ),
-          data: body);
+      final body = jsonEncode(signup.toJson());
+      Response res = await  api.sendRequest.post(
+        'auth/register',
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: body,
+      );
+
       if (res.statusCode == 200) {
-        // Đăng ký thành công
-        print("ok");
         return "ok";
       } else if (res.statusCode == 400) {
-        // Email đã tồn tại
-        print("Email is exist");
         return "Email is exist";
       } else {
-        // Đăng ký thất bại
-        print("fail");
         return "signup fail";
       }
     } catch (ex) {
-      // Xử lý lỗi
       print(ex);
       rethrow;
     }
   }
 
-
-  Future<String> login(String email, String password) async {
+  Future<LoginResponse?> login(String email, String password) async {
+    print("da vo");
     try {
-      final body = jsonEncode({'email': email, 'password': password});
-      Response res = await api.sendRequest.post('auth/login',
-          options: Options(headers: header('no token')), data: body);
+      // Tạo body cho yêu cầu đăng nhập
+      final body = jsonEncode({
+        'email': email,
+        'password': password,
+      });
+
+      // Gửi yêu cầu POST đến API
+      Response res = await api.sendRequest.post(
+        'auth/login',
+        options: Options(
+          contentType: Headers.jsonContentType,
+        ),
+        data: body,
+      );
+
+      // In ra mã trạng thái HTTP và nội dung phản hồi
+      print("Response status code: ${res.statusCode}");
+      print("Response data: ${res.data}");
+
       if (res.statusCode == 200) {
+        // Nếu mã trạng thái là 200 (OK), phân tích dữ liệu và trả về đối tượng LoginResponse
         final Map<String, dynamic> data = res.data;
-        final String token = data['token']; // Lấy token từ phản hồi
-        print("ok login");
-        return token;
+        final loginResponse = LoginResponse.fromJson(data);
+        print("Login successful");
+        print("Access token: ${loginResponse?.accessToken}");
+        print("Refresh token: ${loginResponse?.refreshToken}");
+        print("User: ${loginResponse?.user}");
+        return loginResponse;
       } else if (res.statusCode == 400) {
-        // Tài khoản chưa được đăng ký hoặc mật khẩu không đúng
-        return "Unregistered account or wrong password";
+        // Nếu mã trạng thái là 400 (Bad Request), thông báo lỗi
+        print("Login failed: Unregistered account or wrong password");
+        return null; // Tài khoản chưa được đăng ký hoặc mật khẩu không đúng
+      } else if (res.statusCode == 403) {
+        // Nếu mã trạng thái là 403 (Forbidden), thông báo lỗi
+        print("Login failed: Forbidden access. Check your credentials or permissions.");
+        return null; // Quyền truy cập bị từ chối
       } else {
-        // Đăng nhập thất bại
-        return "login fail";
+        // Nếu mã trạng thái không phải là 200, 400, hoặc 403, thông báo lỗi chung
+        print("Login failed with status code: ${res.statusCode}");
+        return null; // Đăng nhập thất bại
       }
     } catch (ex) {
-      // Xử lý lỗi
-      print(ex);
-      rethrow;
+      // Xử lý lỗi và in ra thông báo lỗi
+      print("Exception occurred: $ex");
+      return null; // Xử lý lỗi
     }
   }
+
+
 
   Future<Response> getNotifications() async {
     try {

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:shoehubapp/page/CategoryListScreen.dart';
+import 'package:shoehubapp/page/WalletScreen.dart';
 import 'package:shoehubapp/page/NotificationScreen.dart';
 import 'package:shoehubapp/page/StatisticsScreen.dart';
 import 'package:shoehubapp/page/chat_screen.dart';
@@ -59,8 +59,8 @@ class _MainpageState extends State<Mainpage> {
         widget =  StatisticsScreen();
         break;
       case 1:
-        nameWidgets = "Học Tập";
-        widget =  CategoryListScreen();
+        nameWidgets = "Wallet";
+        widget =  WalletScreen();
         break;
       case 2:
         nameWidgets = "Cá Nhân";
@@ -98,7 +98,7 @@ class _MainpageState extends State<Mainpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("EnglishMentor"),
+        title: const Text("MoneyLover"),
         actions: [
           InkWell(
             onTap: () {
@@ -152,7 +152,7 @@ class _MainpageState extends State<Mainpage> {
             const Divider(
               color: Colors.black,
             ),
-            user.id == ''
+            user.username == ''
                 ? const SizedBox()
                 : ListTile(
                     leading: const Icon(Icons.exit_to_app),
@@ -168,11 +168,11 @@ class _MainpageState extends State<Mainpage> {
         items: <BottomNavigationBarItem>[
           const BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Trang chủ',
+            label: 'Home',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.leaderboard_rounded),
-            label: 'Học tập',
+            label: 'Wallet',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.history),

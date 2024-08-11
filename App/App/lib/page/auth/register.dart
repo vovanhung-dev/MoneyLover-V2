@@ -1,4 +1,4 @@
-import '../../model/register.dart';
+import '../../model/Signup.dart';
 import '/data/api.dart';
 import '/page/auth/login.dart';
 import 'package:flutter/material.dart';
@@ -11,36 +11,29 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  final int _gender = 0;
-  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
 
   Future<String> register() async {
     try {
+      final signup = Signup(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
-      final response = await APIRepository().register(Signup(
-          username: _usernameController.text,
-          email: _emailController.text,
-          password: _passwordController.text,
-          phone: _phoneNumberController.text,
-          role: "isClient",
-          status: "actived"
-      ));
+      final response = await APIRepository().register(signup);
+
       if (response == "ok") {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       } else {
-        // Handle error or display message
         print(response);
       }
 
       return response;
     } catch (ex) {
-      // Handle error
       print(ex);
       return "Error";
     }
@@ -105,8 +98,7 @@ class _RegisterState extends State<Register> {
                                 signUpWidget(),
                                 const SizedBox(height: 16),
                                 Row(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Expanded(
                                       child: OutlinedButton(
@@ -117,9 +109,9 @@ class _RegisterState extends State<Register> {
                                           foregroundColor: Colors.orange,
                                         ),
                                         onPressed: () async {
-                                          String respone = await register();
-                                          if (respone != "ok") {
-                                            print(respone);
+                                          String response = await register();
+                                          if (response != "ok") {
+                                            print(response);
                                           }
                                         },
                                         child: const Text('Register'),
@@ -146,16 +138,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  getGender() {
-    if (_gender == 1) {
-      return "Male";
-    } else if (_gender == 2) {
-      return "Female";
-    }
-    return "Other";
-  }
-
-  // Widget text field for registration
   Widget textField(TextEditingController controller, String label) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -181,10 +163,8 @@ class _RegisterState extends State<Register> {
   Widget signUpWidget() {
     return Column(
       children: [
-        textField(_usernameController, "Username"),
         textField(_emailController, "Email"),
         textField(_passwordController, "Password"),
-        textField(_phoneNumberController, "Phone Number"),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Thư viện để định dạng ngày tháng
-import '../data/api.dart'; // Đường dẫn đến APIRepository
+import '../data/WalletAPI.dart';
+import '../model/Wallet.dart';
+import '../data/api.dart';
 
 class StatisticsScreen extends StatefulWidget {
   @override
@@ -8,32 +9,38 @@ class StatisticsScreen extends StatefulWidget {
 }
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
-  final APIRepository _apiRepository = APIRepository();
-  Map<String, dynamic> _statistics = {};
+  final WalletAPI _walletAPI = WalletAPI(API());
+  List<Wallet> _wallets = [];
+  double _totalBalance = 0.0;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchStatistics();
+    _fetchWallets();
   }
 
-  Future<void> _fetchStatistics() async {
+  Future<void> _fetchWallets() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      var response = await _apiRepository.getStatistics();
-      setState(() {
-        _statistics = response.data;
+      final walletResponse = await _walletAPI.getWallets(0); // Fetch page 0
+      if (walletResponse.data?.content != null) {
+        setState(() {
+          _wallets = walletResponse.data.content;
+          _totalBalance = _wallets.fold(0.0, (sum, wallet) => sum + wallet.balance);
+          _isLoading = false;
+        });
+      } else {
+        _totalBalance = 0.0;
         _isLoading = false;
-      });
+      }
     } catch (e) {
-      print("Failed to fetch statistics: $e");
-      setState(() {
-        _isLoading = false;
-      });
+      print("Error fetching wallets: $e");
+      _totalBalance = 0.0;
+      _isLoading = false;
     }
   }
 
@@ -42,63 +49,116 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return Scaffold(
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          _buildStatisticItem(
-              'Tổng số thành viên học tập', _statistics['totalMembers'], Colors.green, Icons.people),
-          _buildStatisticItem(
-              'Tổng số chủ đề', _statistics['totalTopics'], Colors.purple, Icons.topic),
-          _buildStatisticItem('Tổng số từ vựng', _statistics['totalVocabularies'], Colors.red,
-              Icons.library_books),
-        ],
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Tổng Số Tiền Trong Các Ví',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal,
+              ),
+            ),
+            SizedBox(height: 20),
+            _buildBalanceCard(),
+            SizedBox(height: 20),
+            _buildStatisticsCard(),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatisticItem(String title, dynamic value, Color color, IconData icon) {
+  Widget _buildBalanceCard() {
     return Card(
-      elevation: 4,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      color: Colors.white, // Màu nền của card
+      elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10), // Bo góc của card
-        side: BorderSide(color: color, width: 2), // Viền màu sắc
+        borderRadius: BorderRadius.circular(12),
       ),
+      color: Colors.teal.shade50,
       child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
           children: [
-            Icon(
-              icon,
-              size: 36,
-              color: color,
+            Text(
+              'Tổng Số Tiền:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.teal.shade900,
+              ),
             ),
-            SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: color, // Màu của tiêu đề
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  value.toString(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
+            SizedBox(height: 10),
+            Text(
+              '${_totalBalance.toStringAsFixed(2)} VND',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal.shade800,
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatisticsCard() {
+    // Placeholder for additional statistics, can be extended as needed
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Thống Kê Khác:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.teal.shade900,
+              ),
+            ),
+            SizedBox(height: 10),
+            // Example statistics. You can customize or add more.
+            _buildStatisticItem("Số lượng ví:", '${_wallets.length} ví'),
+            _buildStatisticItem("Số ví chính:", '${_wallets.where((w) => w.main).length} ví'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatisticItem(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.teal.shade700,
+            ),
+          ),
+        ],
       ),
     );
   }
