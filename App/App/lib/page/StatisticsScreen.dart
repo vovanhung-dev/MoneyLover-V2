@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';  // Import package intl
 import '../data/WalletAPI.dart';
 import '../model/Wallet.dart';
 import '../data/api.dart';
@@ -42,6 +43,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       _totalBalance = 0.0;
       _isLoading = false;
     }
+  }
+
+  String _formatCurrency(double amount) {
+    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    return formatter.format(amount);
   }
 
   @override
@@ -93,7 +99,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             SizedBox(height: 10),
             Text(
-              '${_totalBalance.toStringAsFixed(2)} VND',
+              _formatCurrency(_totalBalance),
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
@@ -107,7 +113,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildStatisticsCard() {
-    // Placeholder for additional statistics, can be extended as needed
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(
@@ -128,7 +133,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
             SizedBox(height: 10),
-            // Example statistics. You can customize or add more.
             _buildStatisticItem("Số lượng ví:", '${_wallets.length} ví'),
             _buildStatisticItem("Số ví chính:", '${_wallets.where((w) => w.main).length} ví'),
           ],
