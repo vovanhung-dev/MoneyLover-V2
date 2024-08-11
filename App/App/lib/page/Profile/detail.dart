@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../model/user.dart';
+import '../../model/user.dart';
 
 class Detail extends StatefulWidget {
   const Detail({Key? key}) : super(key: key);

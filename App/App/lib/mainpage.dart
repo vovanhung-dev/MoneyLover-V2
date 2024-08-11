@@ -1,14 +1,15 @@
 import 'dart:convert';
+import 'package:shoehubapp/page/Category/CategoryScreen.dart';
 import 'package:shoehubapp/page/WalletScreen.dart';
 import 'package:shoehubapp/page/NotificationScreen.dart';
 import 'package:shoehubapp/page/StatisticsScreen.dart';
-import 'package:shoehubapp/page/chat_screen.dart';
+import 'package:shoehubapp/page/Chatbox/chat_screen.dart';
 
 import './page/home.dart';
 import 'package:provider/provider.dart';
 
 import '/model/user.dart';
-import '/page/detail.dart';
+import 'page/Profile/detail.dart';
 import '/route/page3.dart';
 import 'package:flutter/material.dart';
 import '/page/defaultwidget.dart';
@@ -76,12 +77,11 @@ class _MainpageState extends State<Mainpage> {
         break;
       case 5:
         nameWidgets = "Trang cá nhân";
-
         widget = const Detail();
         break;
       case 6:
-        nameWidgets = "Home";
-        widget = const FolderManagement();
+        nameWidgets = "Category";
+        widget =  CategoryScreen();
         break;
       default:
         nameWidgets = "None";
@@ -171,7 +171,7 @@ class _MainpageState extends State<Mainpage> {
             label: 'Home',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.leaderboard_rounded),
+            icon: Icon(Icons.account_balance_wallet_rounded),
             label: 'Wallet',
           ),
           const BottomNavigationBarItem(
@@ -191,7 +191,11 @@ class _MainpageState extends State<Mainpage> {
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Trang cá nhân',
+            label: 'Profile',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.ac_unit_sharp),
+            label: 'Category',
           ),
         ],
         currentIndex: _selectedIndex,

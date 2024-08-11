@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/chat_service.dart';
+import '../../data/chat_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);

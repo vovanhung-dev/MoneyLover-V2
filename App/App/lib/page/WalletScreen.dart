@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';  // Import package intl
 import '../data/WalletAPI.dart';
 import '../model/Wallet.dart';
 import '../data/api.dart';
@@ -204,6 +205,11 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
+  String _formatCurrency(double amount) {
+    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '');
+    return formatter.format(amount);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,7 +230,9 @@ class _WalletScreenState extends State<WalletScreen> {
           var wallet = _wallets[index];
           return Dismissible(
             key: Key(wallet.id),
-            direction: wallet.main ? DismissDirection.none : DismissDirection.endToStart, // Disable swipe if primary wallet
+            direction: wallet.main
+                ? DismissDirection.none
+                : DismissDirection.endToStart, // Disable swipe if primary wallet
             onDismissed: (direction) {
               if (!wallet.main) {
                 _deleteWallet(wallet.id, index); // Pass index to remove directly
@@ -240,14 +248,18 @@ class _WalletScreenState extends State<WalletScreen> {
               elevation: 4,
               margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
-                leading: Icon(Icons.account_balance_wallet, size: 40, color: Colors.blue),
+                leading: Icon(Icons.account_balance_wallet,
+                    size: 40, color: Colors.blue),
                 title: Text(wallet.name),
-                subtitle: Text("Balance: ${wallet.balance} ${wallet.currency}"),
+                subtitle: Text(
+                    "Balance: ${_formatCurrency(wallet.balance)} ${wallet.currency}"),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: Icon(wallet.main ? Icons.star : Icons.star_border),
+                      icon: Icon(wallet.main
+                          ? Icons.star
+                          : Icons.star_border),
                       onPressed: () => _setPrimaryWallet(wallet),
                     ),
                   ],
