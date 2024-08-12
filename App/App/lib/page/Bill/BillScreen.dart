@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import package intl
+import 'package:intl/intl.dart';
 import '../../data/BillAPI.dart';
 import '../../model/Bill.dart';
 import '../../data/api.dart';
+import 'CreateOrUpdateBillDialog.dart';
 
 class BillScreen extends StatefulWidget {
   @override
@@ -55,82 +56,17 @@ class _BillScreenState extends State<BillScreen> {
   }
 
   Future<void> _addOrUpdateBill([Bill? bill]) async {
-    final isUpdate = bill != null;
-    final _formKey = GlobalKey<FormState>();
-    final _amountController = TextEditingController(text: bill?.amount.toString() ?? '');
-    final _notesController = TextEditingController(text: bill?.notes ?? '');
-    final _categoryController = TextEditingController(text: bill?.category ?? '');
-
-    return showDialog(
+    final result = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isUpdate ? "Update Bill" : "Add Bill"),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _amountController,
-                decoration: InputDecoration(labelText: "Amount"),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _notesController,
-                decoration: InputDecoration(labelText: "Notes"),
-              ),
-              TextFormField(
-                controller: _categoryController,
-                decoration: InputDecoration(labelText: "Category"),
-              ),
-              // Thêm các trường dữ liệu khác ở đây nếu cần
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (_formKey.currentState?.validate() ?? false) {
-                final newBill = Bill(
-                  id: isUpdate ? bill!.id : 'new', // Use a placeholder string for new bills
-                  amount: double.tryParse(_amountController.text) ?? 0.0,
-                  notes: _notesController.text,
-                  category: _categoryController.text,
-                  date: DateTime.now(), // Change value if needed
-                  fromDate: DateTime.now(), // Change value if needed
-                  frequency: 'monthly', // Change value if needed
-                  every: 1, // Change value if needed
-                  dueDate: DateTime.now(), // Change value if needed
-                  paid: false, // Change value if needed
-                );
-                final result = isUpdate
-                    ? await _billAPI.updateBill(newBill)
-                    : await _billAPI.addBill(newBill);
-                _showSnackBar(result);
-                if (result.contains(isUpdate ? "updated successfully" : "added successfully")) {
-                  _fetchBills();
-                  Navigator.of(context).pop();
-                }
-              }
-            },
-
-            child: Text(isUpdate ? "Update" : "Add"),
-          ),
-        ],
+      builder: (context) => CreateOrUpdateBillDialog(
+        billAPI: _billAPI,
+        bill: bill,
       ),
     );
+
+    if (result != null && result.contains("successfully")) {
+      _fetchBills();
+    }
   }
 
   void _showSnackBar(String message) {
@@ -171,7 +107,7 @@ class _BillScreenState extends State<BillScreen> {
           var bill = _bills[index];
           // Calculate next bill date and days until due
           final nextBillDate = _calculateNextBillDate(bill);
-          final daysUntilDue = _calculateDaysUntilDue(bill.date);
+          final daysUntilDue = _calculateDaysUntilDue(bill.fromDate);
 
           return Dismissible(
             key: Key(bill.id.toString()),
@@ -257,6 +193,4 @@ class _BillScreenState extends State<BillScreen> {
 
     return difference;
   }
-
-
 }
