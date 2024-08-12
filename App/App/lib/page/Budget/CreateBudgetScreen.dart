@@ -111,22 +111,18 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Budget'),
+        backgroundColor: Colors.teal, // Color matching previous screens
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
-              DropdownButtonFormField<String>(
+              _buildDropdownField(
+                label: 'Name',
                 value: _selectedName,
-                decoration: const InputDecoration(labelText: 'Name'),
-                items: ['This Week', 'This Month', 'Custom']
-                    .map((name) => DropdownMenuItem(
-                  value: name,
-                  child: Text(name),
-                ))
-                    .toList(),
+                items: ['This Week', 'This Month', 'Custom'],
                 onChanged: (value) {
                   setState(() {
                     _selectedName = value!;
@@ -134,12 +130,12 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                   });
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _amountController,
-                decoration: const InputDecoration(labelText: 'Amount'),
+                label: 'Amount',
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
-                  _amountDisplayController.text = value; // Set amountDisplay equal to amount
+                  _amountDisplayController.text = value;
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -148,14 +144,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                   return null;
                 },
               ),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Category'),
-                items: _categories
-                    .map((category) => DropdownMenuItem(
-                  value: category.id,
-                  child: Text(category.name),
-                ))
-                    .toList(),
+              _buildDropdownField(
+                label: 'Category',
+                value: _categoryController.text,
+                items: _categories.map((category) => category.name).toList(),
                 onChanged: (value) {
                   _categoryController.text = value!;
                 },
@@ -166,14 +158,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                   return null;
                 },
               ),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Wallet'),
-                items: _wallets
-                    .map((wallet) => DropdownMenuItem(
-                  value: wallet.id,
-                  child: Text(wallet.name),
-                ))
-                    .toList(),
+              _buildDropdownField(
+                label: 'Wallet',
+                value: _walletController.text,
+                items: _wallets.map((wallet) => wallet.name).toList(),
                 onChanged: (value) {
                   _walletController.text = value!;
                 },
@@ -187,7 +175,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Repeat'),
+                  const Text('Repeat', style: TextStyle(fontSize: 16)),
                   Switch(
                     value: _repeat,
                     onChanged: (value) {
@@ -199,9 +187,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 ],
               ),
               if (_selectedName == 'Custom') ...[
-                TextFormField(
+                _buildTextField(
                   controller: _periodStartController,
-                  decoration: const InputDecoration(labelText: 'Period Start (yyyy-MM-dd)'),
+                  label: 'Period Start (yyyy-MM-dd)',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the period start date';
@@ -214,9 +202,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                _buildTextField(
                   controller: _periodEndController,
-                  decoration: const InputDecoration(labelText: 'Period End (yyyy-MM-dd)'),
+                  label: 'Period End (yyyy-MM-dd)',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the period end date';
@@ -234,10 +222,66 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               ElevatedButton(
                 onPressed: _createBudget,
                 child: const Text('Create Budget'),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.teal,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  textStyle: TextStyle(fontSize: 18),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    FormFieldValidator<String>? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: DropdownButtonFormField<String>(
+        value: value.isEmpty ? null : value,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        items: items.map((item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+        onChanged: onChanged,
+        validator: validator,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType? keyboardType,
+    ValueChanged<String>? onChanged,
+    FormFieldValidator<String>? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        keyboardType: keyboardType,
+        onChanged: onChanged,
+        validator: validator,
       ),
     );
   }
