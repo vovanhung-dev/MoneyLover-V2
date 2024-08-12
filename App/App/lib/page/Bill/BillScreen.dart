@@ -101,6 +101,13 @@ class _BillScreenState extends State<BillScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
+          : _bills.isEmpty
+          ? Center(
+        child: Text(
+          'No bills available.',
+          style: TextStyle(fontSize: 18, color: Colors.teal),
+        ),
+      )
           : ListView.builder(
         itemCount: _bills.length,
         itemBuilder: (context, index) {
