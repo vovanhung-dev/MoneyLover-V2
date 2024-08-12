@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shoehubapp/data/sharepre.dart'; // Điều chỉnh đường dẫn theo cấu trúc dự án của bạn
+import 'package:shoehubapp/model/BillCreate.dart';
 import '../model/Bill.dart';
 import '../response/BillResponse.dart';
 import 'api.dart';
@@ -50,7 +51,7 @@ class BillAPI {
 
 
   // Thêm hóa đơn mới
-  Future<String> addBill(Bill bill) async {
+  Future<String> addBill(BillCreate bill) async {
     await setToken(); // Đảm bảo token đã được thiết lập
     try {
       final body = bill.toJson();
@@ -79,7 +80,7 @@ class BillAPI {
   }
 
   // Cập nhật hóa đơn
-  Future<String> updateBill(Bill bill) async {
+  Future<String> updateBill(BillCreate bill) async {
     await setToken(); // Đảm bảo token đã được thiết lập
     try {
       final body = bill.toJson();

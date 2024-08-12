@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shoehubapp/model/BillCreate.dart';
 import '../../data/BillAPI.dart';
+import '../../data/WalletAPI.dart';
+import '../../data/CategoryAPI.dart';
 import '../../model/Bill.dart';
 import '../../data/api.dart';
 import 'CreateOrUpdateBillDialog.dart';
@@ -12,6 +15,8 @@ class BillScreen extends StatefulWidget {
 
 class _BillScreenState extends State<BillScreen> {
   final BillAPI _billAPI = BillAPI(API());
+  final WalletAPI _walletAPI = WalletAPI(API());
+  final CategoryAPI _categoryAPI = CategoryAPI(API());
   List<Bill> _bills = [];
   bool _isLoading = true;
 
@@ -55,11 +60,13 @@ class _BillScreenState extends State<BillScreen> {
     }
   }
 
-  Future<void> _addOrUpdateBill([Bill? bill]) async {
+  Future<void> _addOrUpdateBill([BillCreate? bill]) async {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => CreateOrUpdateBillDialog(
         billAPI: _billAPI,
+        walletAPI: _walletAPI, // Pass WalletAPI instance
+        categoryAPI: _categoryAPI, // Pass CategoryAPI instance
         bill: bill,
       ),
     );
@@ -114,7 +121,7 @@ class _BillScreenState extends State<BillScreen> {
           var bill = _bills[index];
           // Calculate next bill date and days until due
           final nextBillDate = _calculateNextBillDate(bill);
-          final daysUntilDue = _calculateDaysUntilDue(bill.fromDate);
+          final daysUntilDue = _calculateDaysUntilDue(bill.date);
 
           return Dismissible(
             key: Key(bill.id.toString()),
@@ -180,7 +187,6 @@ class _BillScreenState extends State<BillScreen> {
   }
 
   int _calculateDaysUntilDue(DateTime fromDate) {
-    // Lấy ngày hiện tại ở múi giờ địa phương và đặt giờ, phút, giây về 0
     final now = DateTime.now().toLocal().subtract(Duration(
       hours: DateTime.now().hour,
       minutes: DateTime.now().minute,
@@ -188,10 +194,8 @@ class _BillScreenState extends State<BillScreen> {
       milliseconds: DateTime.now().millisecond,
     ));
 
-    // Lấy ngày từ `fromDate` và đặt giờ, phút, giây về 0
     final fromDateStart = DateTime(fromDate.year, fromDate.month, fromDate.day);
 
-    // Tính toán số ngày giữa hai ngày
     final difference = now.difference(fromDateStart).inDays + 1;
 
     print('Now: $now');
