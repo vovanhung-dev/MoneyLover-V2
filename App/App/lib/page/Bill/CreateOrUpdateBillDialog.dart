@@ -109,75 +109,127 @@ class _CreateOrUpdateBillDialogState extends State<CreateOrUpdateBillDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_isUpdate ? "Update Bill" : "Add Bill"),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _amountController,
-              decoration: InputDecoration(labelText: "Amount"),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an amount';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _notesController,
-              decoration: InputDecoration(labelText: "Notes"),
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedCategoryId,
-              decoration: InputDecoration(labelText: "Category"),
-              items: _categories.map((category) {
-                return DropdownMenuItem(
-                  value: category.id,
-                  child: Text(category.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategoryId = value;
-                  _selectedCategoryType = _categories
-                      .firstWhere((category) => category.id == value)
-                      .categoryType as String;
-                });
-              },
-              validator: (value) => value == null ? 'Please select a category' : null,
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedWalletId,
-              decoration: InputDecoration(labelText: "Wallet"),
-              items: _wallets.map((wallet) {
-                return DropdownMenuItem(
-                  value: wallet.id,
-                  child: Text(wallet.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedWalletId = value;
-                });
-              },
-              validator: (value) => value == null ? 'Please select a wallet' : null,
-            ),
-            CheckboxListTile(
-              title: Text("Forever"),
-              value: _forever,
-              onChanged: (value) {
-                setState(() {
-                  _forever = value ?? false;
-                });
-              },
-            ),
-          ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: Text(
+        _isUpdate ? "Update Bill" : "Add Bill",
+        style: TextStyle(
+          color: Colors.deepPurple,
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _amountController,
+                decoration: InputDecoration(
+                  labelText: "Amount",
+                  prefixIcon: Icon(Icons.attach_money),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepPurple.shade50,
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an amount';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _notesController,
+                decoration: InputDecoration(
+                  labelText: "Notes",
+                  prefixIcon: Icon(Icons.note),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepPurple.shade50,
+                ),
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCategoryId,
+                decoration: InputDecoration(
+                  labelText: "Category",
+                  prefixIcon: Icon(Icons.category),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepPurple.shade50,
+                ),
+                items: _categories.map((category) {
+                  return DropdownMenuItem(
+                    value: category.id,
+                    child: Text(category.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategoryId = value;
+                    _selectedCategoryType = _categories
+                        .firstWhere((category) => category.id == value)
+                        .categoryType as String;
+                  });
+                },
+                validator: (value) => value == null ? 'Please select a category' : null,
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedWalletId,
+                decoration: InputDecoration(
+                  labelText: "Wallet",
+                  prefixIcon: Icon(Icons.account_balance_wallet),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepPurple.shade50,
+                ),
+                items: _wallets.map((wallet) {
+                  return DropdownMenuItem(
+                    value: wallet.id,
+                    child: Text(wallet.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedWalletId = value;
+                  });
+                },
+                validator: (value) => value == null ? 'Please select a wallet' : null,
+              ),
+              SizedBox(height: 16),
+              CheckboxListTile(
+                title: Text(
+                  "Forever",
+                  style: TextStyle(color: Colors.deepPurple),
+                ),
+                value: _forever,
+                onChanged: (value) {
+                  setState(() {
+                    _forever = value ?? false;
+                  });
+                },
+                activeColor: Colors.deepPurple,
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -185,11 +237,24 @@ class _CreateOrUpdateBillDialogState extends State<CreateOrUpdateBillDialog> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text("Cancel"),
+          child: Text(
+            "Cancel",
+            style: TextStyle(color: Colors.deepPurple),
+          ),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: _submit,
-          child: Text(_isUpdate ? "Update" : "Add"),
+          style: ElevatedButton.styleFrom(
+            primary: Colors.deepPurple,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          child: Text(
+            _isUpdate ? "Update" : "Add",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );
