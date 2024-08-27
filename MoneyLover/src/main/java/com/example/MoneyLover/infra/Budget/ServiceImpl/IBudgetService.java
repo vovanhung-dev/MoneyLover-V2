@@ -61,6 +61,8 @@ public class IBudgetService implements BudgetService {
                         budget.setAmount(existingBudgetObj.getAmount() + budgetDto.getAmount());
                     }
                 } else {
+                    System.out.println("data" );
+
                     return _res.createErrorResponse("Budget not found", 500);
                 }
             }
@@ -69,6 +71,7 @@ public class IBudgetService implements BudgetService {
             return _res.createSuccessResponse(200, budget);
 
         } catch (Exception e) {
+            System.out.println("data" + e);
             return _res.createErrorResponse(e.getMessage(), 500);
         }
     }

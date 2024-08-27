@@ -81,13 +81,25 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
 
   Future<void> _createBudget() async {
     if (_formKey.currentState!.validate()) {
+      // Get the Category ID based on the name
+      final selectedCategory = _categories.firstWhere(
+            (category) => category.name == _categoryController.text,
+        orElse: () => throw Exception('Category not found'),
+      );
+
+      // Get the Wallet ID based on the name
+      final selectedWallet = _wallets.firstWhere(
+            (wallet) => wallet.name == _walletController.text,
+        orElse: () => throw Exception('Wallet not found'),
+      );
+
       final budget = BudgetCreate(
         amount: double.tryParse(_amountController.text) ?? 0,
-        category: _categoryController.text,
+        category: selectedCategory.id, // Use the Category ID
         repeat: _repeat,
         name: _selectedName,
         amountDisplay: _amountController.text,
-        wallet: _walletController.text,
+        wallet: selectedWallet.id, // Use the Wallet ID
         periodStart: DateTime.parse(_periodStartController.text),
         periodEnd: DateTime.parse(_periodEndController.text),
       );
@@ -105,6 +117,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
