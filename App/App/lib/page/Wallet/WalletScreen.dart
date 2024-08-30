@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import package intl
 import '../../data/WalletAPI.dart';
+import '../../data/sharepre.dart';
+import '../../firebase/group_chat_service.dart';
 import '../../model/Wallet.dart';
 import '../../data/api.dart';
 import 'SearchResultsWidget.dart';
@@ -242,20 +244,6 @@ class _WalletScreenState extends State<WalletScreen> {
     }
   }
 
-// Add manager to wallet
-  Future<void> _addManager(String walletId, String codeOrEmail) async {
-    try {
-      final result = await _walletAPI.addMemberToWallet(walletId, codeOrEmail);
-      _showSnackBar(result);
-      if (result.contains("success")) {
-        await _fetchWallets(); // Refresh wallets to reflect changes
-        Navigator.of(context).pop(); // Close the modal
-      }
-    } catch (e) {
-      _showSnackBar("Failed to add manager");
-    }
-  }
-
 
   void _openManagerSettingsModal(Wallet wallet) {
     showModalBottomSheet(
@@ -270,18 +258,42 @@ class _WalletScreenState extends State<WalletScreen> {
             final TextEditingController _searchController = TextEditingController();
             List<Map<String, dynamic>> _searchResults = [];
 
-            // Add manager to wallet
             Future<void> _addManager(String walletId, String codeOrEmail) async {
               try {
+                // Thêm quản lý vào ví
                 final result = await _walletAPI.addMemberToWallet(walletId, codeOrEmail);
                 _showSnackBar(result);
+
                 if (result.contains("success")) {
-                  await _fetchWallets(); // Refresh wallets to reflect changes
+                  // Cập nhật danh sách ví để phản ánh thay đổi
+                  await _fetchWallets();
+
+                  // Lấy danh sách người dùng (quản lý) từ ví đã cập nhật
+                  final wallet = _wallets.firstWhere((w) => w.id == walletId);
+
+                  // Lấy danh sách người dùng từ quản lý
+                  final managerUsers = wallet.managers.map((manager) => manager.user).toList();
+
+                  // Lấy danh sách người dùng bổ sung từ getUser
+                  final additionalUser = await getUser(); // Ensure this returns a single User object
+
+                  // Nếu getUser() trả về một đối tượng User, biến đổi thành danh sách
+                  final additionalUsers = [additionalUser];
+
+                  // Kết hợp danh sách người dùng quản lý và người dùng bổ sung
+                  final users = [...managerUsers, ...additionalUsers];
+
+                  // Gọi hàm tạo nhóm chat với danh sách người dùng
+                  await createGroupChat(walletId, "New Group Name", users);
                 }
               } catch (e) {
                 _showSnackBar("Failed to add manager");
               }
             }
+
+
+
+
 
             // Function to search users based on query
             void _searchUsers(String query) async {
