@@ -1,4 +1,5 @@
-// model/WalletScreen.dart
+import 'Manager.dart';
+
 class Wallet {
   final String id;
   final String name;
@@ -7,6 +8,7 @@ class Wallet {
   final String currency;
   final String type;
   bool main;
+  List<Manager> managers; // Ensure this is a non-null list
 
   Wallet({
     required this.id,
@@ -16,7 +18,8 @@ class Wallet {
     required this.currency,
     required this.type,
     required this.main,
-  });
+    List<Manager>? managers, // Accept null, default to empty list
+  }) : managers = managers ?? [];
 
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
@@ -27,9 +30,12 @@ class Wallet {
       currency: json['currency'] ?? 'VND',
       type: json['type'] ?? 'basic',
       main: json['main'] ?? false,
+      managers: (json['managers'] as List<dynamic>?)
+          ?.map((managerJson) => Manager.fromJson(managerJson))
+          .toList() ??
+          [], // Initialize to empty list if null
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {
@@ -40,6 +46,7 @@ class Wallet {
       'currency': currency,
       'type': type,
       'main': main,
+      'managers': managers.map((manager) => manager.toJson()).toList(),
     };
   }
 }

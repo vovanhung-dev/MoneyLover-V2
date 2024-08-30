@@ -27,7 +27,7 @@ class CategoryAPI {
     await setToken(); // Ensure token is set
     try {
       final Response res = await api.sendRequest.get(
-        'categories',
+        'categories?type=All',
         options: Options(
           headers: {
             'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ class CategoryAPI {
     await setToken(); // Ensure token is set
     try {
       final Response res = await api.sendRequest.get(
-        'categories/all',
+        'categories?type=All',
         options: Options(
           headers: {
             'Content-Type': 'application/json',
@@ -85,6 +85,8 @@ class CategoryAPI {
     await setToken(); // Ensure token is set
     try {
       final body = category.toJson();
+      print(body);
+      print(_token);
       final Response res = await api.sendRequest.post(
         'category/add',
         data: body,

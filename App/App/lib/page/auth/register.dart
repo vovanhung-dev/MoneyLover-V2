@@ -11,32 +11,50 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<String> register() async {
-    try {
-      final signup = Signup(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-
-      final response = await APIRepository().register(signup);
-
-      if (response == "ok") {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+  Future<void> register() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        final signup = Signup(
+          email: _emailController.text,
+          password: _passwordController.text,
+          username: _usernameController.text,
         );
-      } else {
-        print(response);
-      }
 
-      return response;
-    } catch (ex) {
-      print(ex);
-      return "Error";
+        final response = await APIRepository().register(signup);
+
+        if (response == "ok") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        } else {
+          _showErrorDialog("Registration failed: $response");
+        }
+      } catch (ex) {
+        _showErrorDialog("Error: $ex");
+      }
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -44,128 +62,114 @@ class _RegisterState extends State<Register> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Register"),
+        backgroundColor: Colors.orange,
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Container(
-              child: Expanded(
-                flex: 1,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.orange,
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          alignment: Alignment.topLeft,
-                          padding: const EdgeInsets.all(16),
-                          decoration: const BoxDecoration(color: Colors.orange),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Register",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 30),
-                              ),
-                              Text(
-                                "Create an account",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 8,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30))),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                signUpWidget(),
-                                const SizedBox(height: 16),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        style: OutlinedButton.styleFrom(
-                                          side: const BorderSide(
-                                              color: Colors.orange, width: 1),
-                                          shadowColor: Colors.orange,
-                                          foregroundColor: Colors.orange,
-                                        ),
-                                        onPressed: () async {
-                                          String response = await register();
-                                          if (response != "ok") {
-                                            print(response);
-                                          }
-                                        },
-                                        child: const Text('Register'),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 16,
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                "Create an account",
+                style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.orange),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _usernameController,
+                label: "Username",
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your username';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _emailController,
+                label: "Email",
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _passwordController,
+                label: "Password",
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.orange,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: register,
+                child: const Text(
+                  "Register",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget textField(TextEditingController controller, String label) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: TextFormField(
-        controller: controller,
-        obscureText: label.contains('Password'),
-        cursorColor: Colors.orange,
-        decoration: InputDecoration(
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.orange, width: 1),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account? "),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      );
+                    },
+                    child: const Text("Login"),
+                  ),
+                ],
+              ),
+            ],
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.orange, width: 1),
-          ),
-          labelText: label,
-          labelStyle: const TextStyle(color: Color.fromARGB(255, 12, 45, 72)),
-          iconColor: Colors.orange,
         ),
       ),
     );
   }
 
-  Widget signUpWidget() {
-    return Column(
-      children: [
-        textField(_emailController, "Email"),
-        textField(_passwordController, "Password"),
-      ],
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      cursorColor: Colors.orange,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color.fromARGB(255, 12, 45, 72)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.orange),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.orange),
+        ),
+      ),
+      validator: validator,
     );
   }
 }

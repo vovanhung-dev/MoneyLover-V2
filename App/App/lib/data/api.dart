@@ -10,7 +10,7 @@ import 'sharepre.dart';
 
 class API {
   final Dio _dio = Dio();
-  String baseUrl = "http://172.18.208.1:8082";
+  String baseUrl = "http://172.27.0.1:8082";
 
   API() {
     _dio.options.baseUrl = "$baseUrl/api/v1/";

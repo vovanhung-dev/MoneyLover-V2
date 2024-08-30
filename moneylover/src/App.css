@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes clickEffect {
+    0% {
+        transform: translate(-40%, -50%) scale(0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(-40%, -50%) scale(3);
+        opacity: 0;
+    }
+}
+
+.animate-click-effect::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 20%;
+    width: 33%;
+    height: 33%;
+    border-radius: 3px;
+    background-color: #7a7979;
+    transform: translate(-40%, -50%) scale(3);
+    animation: clickEffect 0.5s ease-out forwards;
+}
+
+.react-datepicker__tab-loop {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.ant-modal-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 30px !important;
+}
+
+.ant-pagination-options {
+    display: none !important;
+}
+
+.swal2-actions {
+    flex-direction: row-reverse;
+}
+
+.container-wrapper {
+    @apply w-full bg-white h-screen shadow-default rounded-xl
+}
+
+
+.container-wrapper-auto {
+    @apply w-full bg-white h-auto shadow-default rounded-xl
+}
+
+
+.flex-center {
+    @apply flex items-center justify-center
+}
+
+.flex-start {
+    @apply flex items-center justify-start
+}
+
+
+.flex-between {
+    @apply flex items-center justify-between
+}
+
+
+.hidden-date-picker {
+    display: none;
+}
+
+.infoWallet {
+    @apply font-semibold font-satoshi text-lg
+}
+
+.card_show:after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 25px solid rgb(107 114 128);
+    top: -17px;
+    left: 2px;
+
+}
+
+.card {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(17, 25, 40, 0.75);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.125)
+}
+
+/*.ant-float-btn {*/
+/*    !*bottom: -50px !important;*!*/
+/*    width: 75px !important;*/
+/*    height: 75px !important;*/
+/*}*/
