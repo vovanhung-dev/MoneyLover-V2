@@ -291,10 +291,6 @@ class _WalletScreenState extends State<WalletScreen> {
               }
             }
 
-
-
-
-
             // Function to search users based on query
             void _searchUsers(String query) async {
               try {

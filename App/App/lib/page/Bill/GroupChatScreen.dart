@@ -23,6 +23,44 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _userGroups = _userFuture.then((user) => getUserGroups(user.id as String)); // Fetch groups using user ID
   }
 
+  void _showRenameDialog(Group group) {
+    final TextEditingController _nameController = TextEditingController(text: group.name);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Rename Group'),
+          content: TextField(
+            controller: _nameController,
+            decoration: InputDecoration(labelText: 'New group name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final newName = _nameController.text.trim();
+                if (newName.isNotEmpty) {
+                  await updateGroupName(group.id, newName);
+                  setState(() {
+                    _userGroups = _userFuture.then((user) => getUserGroups(user.id as String));
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Rename'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,7 +126,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         ),
                       );
                     },
-                    trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[600]),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
+                      onPressed: () => _showRenameDialog(group),
+                    ),
                   );
                 },
               );

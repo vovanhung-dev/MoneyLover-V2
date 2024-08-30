@@ -114,3 +114,16 @@ Future<List<Group>> getUserGroups(String userId) async {
     return [];
   }
 }
+
+Future<void> updateGroupName(String groupId, String newName) async {
+  try {
+    final groupRef = FirebaseFirestore.instance.collection('groups').doc(groupId);
+    await groupRef.update({
+      'name': newName,
+    });
+    print('Group name updated to: $newName');
+  } catch (error) {
+    print('Error updating group name: $error');
+  }
+}
+
