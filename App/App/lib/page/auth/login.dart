@@ -27,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (loginResponse != null) {
-          print(loginResponse);
           await saveUser(loginResponse.user);
           await saveToken(loginResponse.accessToken);
 
@@ -36,12 +35,74 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (context) => const Mainpage()),
           );
         } else {
-          print("Login failed");
+          _showErrorDialog("Login failed");
         }
       } catch (ex) {
-        print("Exception occurred during login: $ex");
+        _showErrorDialog("Exception occurred during login: $ex");
       }
     }
+  }
+
+  Future<void> forgotPassword() async {
+    final email = emailController.text.trim();
+
+    if (email.isEmpty) {
+      _showErrorDialog("Please enter your email");
+      return;
+    }
+
+    try {
+      final response = await APIRepository().forgotPassword(email);
+
+      if (response == "Password reset email sent") {
+        _showSuccessDialog(response);
+        // Proceed to the next step (e.g., OTP screen) if needed
+      } else {
+        _showErrorDialog(response);
+      }
+    } catch (ex) {
+      _showErrorDialog("An error occurred during password reset: $ex");
+    }
+  }
+
+  Future<void> _showSuccessDialog(String message) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showErrorDialog(String message) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -181,6 +242,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                             const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: () {
+                                _showForgotPasswordDialog();
+                              },
+                              child: const Text("Forgot Password?", style: TextStyle(color: Colors.orange)),
+                            ),
                           ],
                         ),
                       ),
@@ -192,6 +259,136 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showForgotPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController forgotPasswordEmailController = TextEditingController();
+
+        return AlertDialog(
+          title: const Text('Forgot Password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: forgotPasswordEmailController,
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  final email = forgotPasswordEmailController.text.trim();
+
+                  if (email.isEmpty) {
+                    _showErrorDialog("Please enter your email");
+                    return;
+                  }
+
+                  try {
+                    final response = await APIRepository().forgotPassword(email);
+
+                    if (response == "Password reset email sent") {
+                      Navigator.pop(context); // Close the dialog
+                      _showOtpDialog(email); // Show the OTP dialog
+                    } else {
+                      _showErrorDialog(response);
+                    }
+                  } catch (ex) {
+                    _showErrorDialog("An error occurred: $ex");
+                  }
+                },
+                child: const Text("Submit"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showOtpDialog(String email) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController otpController = TextEditingController();
+        final TextEditingController newPasswordController = TextEditingController();
+        final TextEditingController confirmPasswordController = TextEditingController();
+
+        return AlertDialog(
+          title: const Text('Enter OTP'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: otpController,
+                decoration: const InputDecoration(
+                  labelText: "OTP",
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: newPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "New Password",
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Confirm Password",
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  final otp = otpController.text.trim();
+                  final newPassword = newPasswordController.text.trim();
+                  final confirmPassword = confirmPasswordController.text.trim();
+
+                  if (otp.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+                    _showErrorDialog("Please fill in all fields");
+                    return;
+                  }
+
+                  if (newPassword != confirmPassword) {
+                    _showErrorDialog("Passwords do not match");
+                    return;
+                  }
+
+                  try {
+                    final response = await APIRepository().submitOtp(email, otp);
+
+                    if (response == "OTP verified successfully") {
+                      final account = "account_id"; // Replace with actual account ID
+                      final changePasswordResponse = await APIRepository().changePasswordForgot(account, newPassword);
+
+                      if (changePasswordResponse == "Password changed successfully") {
+                        Navigator.pop(context); // Close the OTP dialog
+                        _showSuccessDialog("Password changed successfully");
+                      } else {
+                        _showErrorDialog(changePasswordResponse);
+                      }
+                    } else {
+                      _showErrorDialog(response);
+                    }
+                  } catch (ex) {
+                    _showErrorDialog("An error occurred: $ex");
+                  }
+                },
+                child: const Text("Submit"),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
