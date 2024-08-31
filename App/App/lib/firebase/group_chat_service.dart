@@ -126,3 +126,40 @@ Future<void> updateGroupName(String groupId, String newName) async {
   }
 }
 
+Future<void> removeMemberFromGroup(String groupId, String userId) async {
+  try {
+    final groupRef = FirebaseFirestore.instance.collection('groups').doc(groupId);
+    final groupSnapshot = await groupRef.get();
+
+    if (groupSnapshot.exists) {
+      final groupData = groupSnapshot.data()!;
+
+      // Update the `membersId` array by removing the userId
+      await groupRef.update({
+        'membersId': FieldValue.arrayRemove([userId]),
+      });
+
+      // Update the `members` array by removing the member's data
+      final updatedMembers = (groupData['members'] as List)
+          .where((member) => member['user']['id'] != userId)
+          .toList();
+      await groupRef.update({
+        'members': updatedMembers,
+      });
+
+      // Remove the user from the `unreadCount` map
+      final Map<String, dynamic> unreadCount = Map<String, dynamic>.from(groupData['unreadCount'] ?? {});
+      unreadCount.remove(userId);
+      await groupRef.update({
+        'unreadCount': unreadCount,
+      });
+
+      print('Member removed from group');
+    } else {
+      print('Group does not exist');
+    }
+  } catch (error) {
+    print('Error removing member from group: $error');
+  }
+}
+

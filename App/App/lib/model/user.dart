@@ -11,6 +11,14 @@ class User {
     this.enable,
   });
 
+  factory User.fromDocument(Map<String, dynamic>? doc) {
+    return User(
+      id: doc?['id'] ?? '',
+      username: doc?['username'],
+      email: doc?['email'],
+    );
+  }
+
   // Factory method to create a User object from JSON data
   factory User.fromJson(Map<String, dynamic> json) {
     return User(

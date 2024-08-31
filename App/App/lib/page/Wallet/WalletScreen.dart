@@ -220,6 +220,8 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<void> _removeManager(String walletId, String userId) async {
     try {
       final result = await _walletAPI.removeMemberFromWallet(walletId, userId);
+      await removeMemberFromGroup(walletId, userId as String);
+
       _showSnackBar(result);
       if (result.contains("success")) {
         await _fetchWallets(); // Refresh wallets to reflect changes
