@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shoehubapp/data/sharepre.dart';
+import 'package:shoehubapp/model/TransactionCreate.dart';
 import '../model/Transaction.dart';
 import '../response/TransactionResponse.dart';
 import 'api.dart';
@@ -53,10 +54,12 @@ class TransactionAPI {
 
 
   // Create a new transaction
-  Future<String> createTransaction(Transaction transaction) async {
+  Future<String> createTransaction(TransactionCreate transaction) async {
     await setToken();
     try {
-      final body = transaction.toJson(); // Ensure your Transaction model has a toJson method
+      final body = transaction.toJson();
+      print("body");
+      print(body);
       final Response res = await api.sendRequest.post(
         'transaction/add',
         data: body,
@@ -67,6 +70,9 @@ class TransactionAPI {
           },
         ),
       );
+
+      print("res");
+      print(res);
 
       if (res.statusCode == 200) {
         return "Transaction created successfully";

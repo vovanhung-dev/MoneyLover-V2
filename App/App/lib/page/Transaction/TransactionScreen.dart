@@ -3,6 +3,7 @@ import 'package:shoehubapp/model/Category.dart';
 import 'package:shoehubapp/data/api.dart';
 import 'package:shoehubapp/data/sharepre.dart';
 import 'package:shoehubapp/model/Transaction.dart';
+import 'package:shoehubapp/model/TransactionCreate.dart';
 import 'package:shoehubapp/response/TransactionListResponse.dart';
 import 'package:shoehubapp/response/WalletResponse.dart';
 import 'package:shoehubapp/data/TransactionAPI.dart';
@@ -87,17 +88,18 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   Future<void> _createTransaction() async {
     try {
-      final transaction = {
-        'wallet': _selectedWallet ?? '',
-        'amount': double.tryParse(_amountController.text) ?? 0.0,
-        'remind': true,
-        'exclude': _exclude,
-        'notes': _notesController.text,
-        'date': '${_startDate.day}-${_startDate.month}-${_startDate.year}',
-        'category': _selectedCategory ?? '',
-        'type': _transactionType,
-      };
-      final result = await _transactionAPI.createTransaction(transaction as Transaction);
+      final transaction = TransactionCreate(
+        wallet: _selectedWallet ?? '',
+        amount: double.tryParse(_amountController.text) ?? 0.0,
+        amountDisplay: double.tryParse(_amountController.text) ?? 0.0,
+        remind: true,
+        exclude: _exclude,
+        notes: _notesController.text,
+        date: '${_startDate.day}-${_startDate.month}-${_startDate.year}',
+        category: _selectedCategory ?? '',
+        type: _transactionType,
+      );
+      final result = await _transactionAPI.createTransaction(transaction as TransactionCreate);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
       _loadTransactions();
     } catch (e) {
