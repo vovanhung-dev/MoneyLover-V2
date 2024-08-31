@@ -101,7 +101,6 @@ Future<void> addMemberToGroup(String groupId, Map<String, dynamic> newMember) as
   }
 }
 
-
 Future<List<Group>> getUserGroups(String userId) async {
   try {
     final groupsQuery = FirebaseFirestore.instance

@@ -62,43 +62,46 @@ class _ChatScreenState extends State<ChatScreen> {
                     final messageTime = (message['createdAt'] as Timestamp).toDate();
                     final formattedTime = DateFormat('h:mm a, dd MMM yyyy').format(messageTime);
 
-                    return Align(
-                      alignment:
-                      isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        padding: EdgeInsets.all(10.0),
-                        margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                        decoration: BoxDecoration(
-                          color: isCurrentUser ? Colors.teal[200] : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (!isCurrentUser)
+                    return GestureDetector(
+                      onLongPress: () => _showMemberInfoDialog(sender),  // Show member info on long press
+                      child: Align(
+                        alignment:
+                        isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          padding: EdgeInsets.all(10.0),
+                          margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                          decoration: BoxDecoration(
+                            color: isCurrentUser ? Colors.teal[200] : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (!isCurrentUser)
+                                Text(
+                                  sender['username'] ?? 'Unknown',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.teal[800],
+                                  ),
+                                ),
                               Text(
-                                sender['username'] ?? 'Unknown',
+                                message['text'],
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal[800],
+                                  fontSize: 16.0,
+                                  color: Colors.black87,
                                 ),
                               ),
-                            Text(
-                              message['text'],
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                color: Colors.black87,
+                              SizedBox(height: 5.0),
+                              Text(
+                                formattedTime,  // Sử dụng thời gian đã định dạng
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Colors.grey[600],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 5.0),
-                            Text(
-                              formattedTime,  // Sử dụng thời gian đã định dạng
-                              style: TextStyle(
-                                fontSize: 12.0,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -153,5 +156,32 @@ class _ChatScreenState extends State<ChatScreen> {
 
       _messageController.clear();
     }
+  }
+
+  void _showMemberInfoDialog(Map<String, dynamic> sender) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Thông tin thành viên'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tên: ${sender['username'] ?? 'Không rõ'}'),
+              Text('Email: ${sender['email'] ?? 'Không rõ'}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Đóng'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
