@@ -121,91 +121,95 @@ class _TransactionScreenState extends State<TransactionScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Create Transaction', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButton<String>(
-                  value: _selectedWallet,
-                  hint: const Text('Select Wallet'),
-                  items: _wallets.map((wallet) {
-                    return DropdownMenuItem(
-                      value: wallet.id,
-                      child: Text(wallet.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedWallet = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                DropdownButton<String>(
-                  value: _selectedCategory,
-                  hint: const Text('Select Category'),
-                  items: _categories.map((category) {
-                    return DropdownMenuItem(
-                      value: category.id,
-                      child: Text(category.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                DropdownButton<String>(
-                  value: _transactionType,
-                  hint: const Text('Select Transaction Type'),
-                  items: ['Expense', 'Income'].map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _transactionType = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  controller: _amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  controller: _notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Exclude from report'),
-                    Switch(
-                      value: _exclude,
+                    DropdownButton<String>(
+                      value: _selectedWallet,
+                      hint: const Text('Select Wallet'),
+                      items: _wallets.map((wallet) {
+                        return DropdownMenuItem(
+                          value: wallet.id,
+                          child: Text(wallet.name),
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          _exclude = value;
+                          _selectedWallet = value;
                         });
                       },
                     ),
+                    const SizedBox(height: 16.0),
+                    DropdownButton<String>(
+                      value: _selectedCategory,
+                      hint: const Text('Select Category'),
+                      items: _categories.map((category) {
+                        return DropdownMenuItem(
+                          value: category.id,
+                          child: Text(category.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    DropdownButton<String>(
+                      value: _transactionType,
+                      hint: const Text('Select Transaction Type'),
+                      items: ['Expense', 'Income'].map((type) {
+                        return DropdownMenuItem(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _transactionType = value!;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    TextField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Amount',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    TextField(
+                      controller: _notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Notes',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Exclude from report'),
+                        Switch(
+                          value: _exclude,
+                          onChanged: (value) {
+                            setState(() {
+                              _exclude = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
           actions: [
             TextButton(
@@ -216,7 +220,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
             ),
             TextButton(
               onPressed: () {
-                _createTransaction();
+                _createTransaction(); // Call this method with updated state
                 Navigator.of(context).pop();
               },
               child: const Text('Create', style: TextStyle(color: Colors.teal)),
@@ -226,6 +230,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
