@@ -1,7 +1,6 @@
 class TransactionCreate {
   String wallet;
   double amount;
-  bool remind;
   bool exclude;
   String notes;
   String date;
@@ -12,7 +11,6 @@ class TransactionCreate {
   TransactionCreate({
     required this.wallet,
     required this.amount,
-    required this.remind,
     required this.exclude,
     required this.notes,
     required this.date,
@@ -26,7 +24,6 @@ class TransactionCreate {
     return {
       'wallet': wallet,
       'amount': amount,
-      'remind': remind,
       'exclude': exclude,
       'notes': notes,
       'date': date,
@@ -41,7 +38,6 @@ class TransactionCreate {
     return TransactionCreate(
       wallet: json['wallet'],
       amount: json['amount'],
-      remind: json['remind'],
       exclude: json['exclude'],
       notes: json['notes'],
       date: json['date'],

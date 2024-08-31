@@ -41,7 +41,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
     _transactionAPI = TransactionAPI(API());
     _categoryAPI = CategoryAPI(API());
     _walletAPI = WalletAPI(API());
-    _categoriesFuture = _categoryAPI.fetchAllCategories();
+    _categoriesFuture = _categoryAPI.fetchAllCategories2();
     _walletsFuture = _walletAPI.getWallets(1);
 
     _transactionsFuture = Future.value({'data': []});
@@ -51,7 +51,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   Future<void> _loadInitialData() async {
     try {
-      final categoriesResponse = await _categoryAPI.fetchAllCategories();
+      final categoriesResponse = await _categoryAPI.fetchAllCategories2();
       final walletsResponse = await _walletAPI.getWallets(1);
 
       setState(() {
@@ -92,10 +92,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
         wallet: _selectedWallet ?? '',
         amount: double.tryParse(_amountController.text) ?? 0.0,
         amountDisplay: double.tryParse(_amountController.text) ?? 0.0,
-        remind: true,
         exclude: _exclude,
         notes: _notesController.text,
-        date: '${_startDate.day}-${_startDate.month}-${_startDate.year}',
+        date: '${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')}',
         category: _selectedCategory ?? '',
         type: _transactionType,
       );
@@ -302,12 +301,12 @@ class _TransactionScreenState extends State<TransactionScreen> {
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                             ),
                             subtitle: Text(transaction.notes ?? 'No notes'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                _deleteTransaction(transaction.id);
-                              },
-                            ),
+                            // trailing: IconButton(
+                            //   icon: const Icon(Icons.delete, color: Colors.red),
+                            //   onPressed: () {
+                            //     _deleteTransaction(transaction.id);
+                            //   },
+                            // ),
                           ),
                         );
                       },

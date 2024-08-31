@@ -78,6 +78,33 @@ class CategoryAPI {
     }
   }
 
+  // Fetch all categories
+  Future<List<Category>> fetchAllCategories2() async {
+    await setToken(); // Ensure token is set
+    try {
+      final Response res = await api.sendRequest.get(
+        'categories',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $_token',
+          },
+        ),
+      );
+
+      if (res.statusCode == 200) {
+        return (res.data['data'] as List)
+            .map((e) => Category.fromJson(e))
+            .toList();
+      } else {
+        throw Exception('Failed to load all categories');
+      }
+    } catch (e) {
+      print('Error fetching all categories: $e');
+      throw e;
+    }
+  }
+
   // Create a new category
   Future<String> createCategory(CategoryCreate category) async {
     await setToken(); // Ensure token is set

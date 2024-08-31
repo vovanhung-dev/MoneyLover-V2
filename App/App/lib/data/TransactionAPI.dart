@@ -60,6 +60,8 @@ class TransactionAPI {
       final body = transaction.toJson();
       print("body");
       print(body);
+
+      print(_token);
       final Response res = await api.sendRequest.post(
         'transaction/add',
         data: body,
