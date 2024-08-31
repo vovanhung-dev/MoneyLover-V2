@@ -23,12 +23,16 @@ class _TransactionScreenState extends State<TransactionScreen> {
   late Future<List<Category>> _categoriesFuture;
   late Future<WalletResponse> _walletsFuture;
   late Future<dynamic> _transactionsFuture;
-  String _selectedWallet = '';
-  String _selectedCategory = '';
+  String? _selectedWallet;
+  String? _selectedCategory;
+  String _transactionType = 'Expense';
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
   List<Category> _categories = [];
   List<Wallet> _wallets = [];
+  TextEditingController _amountController = TextEditingController();
+  TextEditingController _notesController = TextEditingController();
+  bool _exclude = false;
 
   @override
   void initState() {
@@ -68,7 +72,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       String end = '${_endDate.day}-${_endDate.month}-${_endDate.year}';
 
       final response = await _transactionAPI.getTransactions(
-        wallet: _selectedWallet,
+        wallet: _selectedWallet ?? '',
         start: start,
         end: end,
       );
@@ -84,14 +88,14 @@ class _TransactionScreenState extends State<TransactionScreen> {
   Future<void> _createTransaction() async {
     try {
       final transaction = {
-        'wallet': _selectedWallet,
-        'amount': 100000,
+        'wallet': _selectedWallet ?? '',
+        'amount': double.tryParse(_amountController.text) ?? 0.0,
         'remind': true,
-        'exclude': false,
-        'notes': '',
-        'date': '20-8-2024',
-        'category': _selectedCategory,
-        'type': 'Expense',
+        'exclude': _exclude,
+        'notes': _notesController.text,
+        'date': '${_startDate.day}-${_startDate.month}-${_startDate.year}',
+        'category': _selectedCategory ?? '',
+        'type': _transactionType,
       };
       final result = await _transactionAPI.createTransaction(transaction as Transaction);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
@@ -117,41 +121,91 @@ class _TransactionScreenState extends State<TransactionScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Create Transaction', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<String>(
-                value: _selectedWallet,
-                hint: const Text('Select Wallet'),
-                items: _wallets.map((wallet) {
-                  return DropdownMenuItem(
-                    value: wallet.id,
-                    child: Text(wallet.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedWallet = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16.0),
-              DropdownButton<String>(
-                value: _selectedCategory,
-                hint: const Text('Select Category'),
-                items: _categories.map((category) {
-                  return DropdownMenuItem(
-                    value: category.id,
-                    child: Text(category.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCategory = value!;
-                  });
-                },
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButton<String>(
+                  value: _selectedWallet,
+                  hint: const Text('Select Wallet'),
+                  items: _wallets.map((wallet) {
+                    return DropdownMenuItem(
+                      value: wallet.id,
+                      child: Text(wallet.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedWallet = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                DropdownButton<String>(
+                  value: _selectedCategory,
+                  hint: const Text('Select Category'),
+                  items: _categories.map((category) {
+                    return DropdownMenuItem(
+                      value: category.id,
+                      child: Text(category.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                DropdownButton<String>(
+                  value: _transactionType,
+                  hint: const Text('Select Transaction Type'),
+                  items: ['Expense', 'Income'].map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _transactionType = value!;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: _amountController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Amount',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: _notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Exclude from report'),
+                    Switch(
+                      value: _exclude,
+                      onChanged: (value) {
+                        setState(() {
+                          _exclude = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -202,7 +256,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedWallet = value!;
+                  _selectedWallet = value;
                   _loadTransactions(); // Load transactions when wallet is changed
                 });
               },

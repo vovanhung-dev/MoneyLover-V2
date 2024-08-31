@@ -119,8 +119,13 @@ class TransactionAPI {
   Future<String> deleteTransaction(String transactionId) async {
     await setToken();
     try {
+      print(transactionId);
+      print(_token);
+
+
       final Response res = await api.sendRequest.delete(
-        'transaction/delete/$transactionId',
+        'transaction/delete/' + transactionId,
+        data: transactionId, // Include the payload in the request
         options: Options(
           headers: {
             'Content-Type': 'application/json',
@@ -141,4 +146,5 @@ class TransactionAPI {
       return "Failed to delete transaction";
     }
   }
+
 }
