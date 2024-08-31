@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/api.dart';
 import '../../model/user.dart';
 import '../Category/CategoryScreen.dart';
 
@@ -14,6 +15,11 @@ class Detail extends StatefulWidget {
 class _DetailState extends State<Detail> {
   late User user;
   bool isLoading = true;
+  final _emailController = TextEditingController();
+  final _oldPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final APIRepository _apiRepository = APIRepository(); // Initialize the API repository
 
   @override
   void initState() {
@@ -26,6 +32,7 @@ class _DetailState extends State<Detail> {
     String strUser = pref.getString('user')!;
 
     user = User.fromJson(jsonDecode(strUser));
+    _emailController.text = user.email!;
     setState(() {
       isLoading = false;
     });
@@ -34,7 +41,7 @@ class _DetailState extends State<Detail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal[50], // Tông màu nền tươi sáng
+      backgroundColor: Colors.teal[50],
       appBar: AppBar(
         backgroundColor: Colors.teal,
         title: const Text('Profile'),
@@ -92,17 +99,29 @@ class _DetailState extends State<Detail> {
                     user.username!,
                   ),
                   const SizedBox(height: 30),
-                  // Button to navigate to CategoryScreen
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CategoryScreen(), // Ensure you have this screen implemented
+                          builder: (context) => CategoryScreen(),
                         ),
                       );
                     },
                     child: Text('Go to Categories'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      textStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: _showChangePasswordDialog,
+                    child: Text('Change Password'),
                     style: ElevatedButton.styleFrom(
                       primary: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
@@ -118,6 +137,145 @@ class _DetailState extends State<Detail> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Change Password'),
+          content: _buildPasswordChangeForm(),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+              style: TextButton.styleFrom(
+                primary: Colors.teal,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPasswordChangeForm() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _oldPasswordController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'Old Password',
+            border: OutlineInputBorder(),
+            suffixIcon: Icon(Icons.lock_outline),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _newPasswordController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'New Password',
+            border: OutlineInputBorder(),
+            suffixIcon: Icon(Icons.lock_outline),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _confirmPasswordController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'Confirm New Password',
+            border: OutlineInputBorder(),
+            suffixIcon: Icon(Icons.lock_outline),
+          ),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _changePassword,
+          child: Text('Change Password'),
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            textStyle: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _changePassword() async {
+    final email = _emailController.text.trim();
+    final oldPassword = _oldPasswordController.text.trim();
+    final newPassword = _newPasswordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (newPassword != confirmPassword) {
+      _showDialog(
+        title: 'Error',
+        message: "New password and confirmation do not match.",
+        isSuccess: false,
+      );
+      return;
+    }
+
+    final response = await _apiRepository.changePassword(
+      email,
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    );
+
+    Navigator.of(context).pop(); // Close the dialog after submission
+
+    _showDialog(
+      title: response == "Password changed successfully" ? 'Success' : 'Error',
+      message: response,
+      isSuccess: response == "Password changed successfully",
+    );
+  }
+
+  void _showDialog({
+    required String title,
+    required String message,
+    required bool isSuccess,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          backgroundColor: isSuccess ? Colors.green[50] : Colors.red[50],
+          titleTextStyle: TextStyle(
+            color: isSuccess ? Colors.green[800] : Colors.red[800],
+            fontWeight: FontWeight.bold,
+          ),
+          contentTextStyle: TextStyle(
+            color: isSuccess ? Colors.green[700] : Colors.red[700],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+              style: TextButton.styleFrom(
+                primary: isSuccess ? Colors.green : Colors.red,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
