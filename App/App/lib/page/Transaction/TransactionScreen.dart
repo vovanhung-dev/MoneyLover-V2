@@ -1,90 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:shoehubapp/model/Category.dart';
+import 'package:shoehubapp/data/api.dart';
+import 'package:shoehubapp/data/sharepre.dart';
+import 'package:shoehubapp/model/Transaction.dart';
+import 'package:shoehubapp/response/TransactionListResponse.dart';
+import 'package:shoehubapp/response/WalletResponse.dart';
+import 'package:shoehubapp/data/TransactionAPI.dart';
+import 'package:shoehubapp/data/CategoryAPI.dart';
+import 'package:shoehubapp/data/WalletAPI.dart';
 
-import '../../data/api.dart';
-import '../../data/sharepre.dart';
-import '../../model/Transaction.dart';
 import '../../model/Wallet.dart';
-import '../../response/TransactionListResponse.dart';
-import '../../response/WalletResponse.dart';
-import '../../response/TransactionResponse.dart';
-import '../../data/TransactionAPI.dart';
 
 class TransactionScreen extends StatefulWidget {
-  const TransactionScreen({Key? key}) : super(key: key);
-
   @override
   _TransactionScreenState createState() => _TransactionScreenState();
 }
 
 class _TransactionScreenState extends State<TransactionScreen> {
   late TransactionAPI _transactionAPI;
+  late CategoryAPI _categoryAPI;
+  late WalletAPI _walletAPI;
   late Future<List<Category>> _categoriesFuture;
   late Future<WalletResponse> _walletsFuture;
-  late Future<TransactionListResponse> _transactionsFuture;
+  late Future<dynamic> _transactionsFuture;
   String _selectedWallet = '';
   String _selectedCategory = '';
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
+  List<Category> _categories = [];
+  List<Wallet> _wallets = [];
 
   @override
   void initState() {
     super.initState();
     _transactionAPI = TransactionAPI(API());
-    _categoriesFuture = fetchAllCategories();
-    _walletsFuture = getWallets(1); // You can change the page number as needed
+    _categoryAPI = CategoryAPI(API());
+    _walletAPI = WalletAPI(API());
+    _categoriesFuture = _categoryAPI.fetchAllCategories();
+    _walletsFuture = _walletAPI.getWallets(1);
+
+    _transactionsFuture = Future.value({'data': []});
+
+    _loadInitialData();
   }
 
-  Future<List<Category>> fetchAllCategories() async {
-    final API api = API();
-    final String? _token = await getToken();
+  Future<void> _loadInitialData() async {
     try {
-      final Response res = await api.sendRequest.get(
-        'categories?type=All',
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $_token',
-          },
-        ),
-      );
+      final categoriesResponse = await _categoryAPI.fetchAllCategories();
+      final walletsResponse = await _walletAPI.getWallets(1);
 
-      if (res.statusCode == 200) {
-        return (res.data['data'] as List)
-            .map((e) => Category.fromJson(e))
-            .toList();
-      } else {
-        throw Exception('Failed to load all categories');
-      }
+      setState(() {
+        _categories = categoriesResponse;
+        _wallets = walletsResponse.data.content;
+        if (_wallets.isNotEmpty) {
+          _selectedWallet = _wallets.first.id;
+        }
+        _loadTransactions();
+      });
     } catch (e) {
-      print('Error fetching all categories: $e');
-      throw e;
-    }
-  }
-
-  Future<WalletResponse> getWallets(int pageNumber) async {
-    final API api = API();
-    final String? _token = await getToken();
-    try {
-      final Response res = await api.sendRequest.get(
-        'wallets',
-        queryParameters: {'page': pageNumber},
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $_token',
-          },
-        ),
-      );
-
-      if (res.statusCode == 200) {
-        return WalletResponse.fromJson(res.data);
-      } else {
-        throw Exception('Failed to load wallets');
-      }
-    } catch (e) {
-      print('Error fetching wallets: $e');
-      throw e;
+      print('Error loading initial data: $e');
     }
   }
 
@@ -95,35 +69,33 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
       final response = await _transactionAPI.getTransactions(
         wallet: _selectedWallet,
-        category: _selectedCategory,
         start: start,
         end: end,
       );
 
       setState(() {
-        _transactionsFuture = Future.value(TransactionListResponse.fromJson(response as Map<String, dynamic>));
+        _transactionsFuture = Future.value(response);
       });
     } catch (e) {
       print('Error loading transactions: $e');
     }
   }
 
-
   Future<void> _createTransaction() async {
     try {
-      final transaction = Transaction(
-        wallet: _selectedWallet,
-        amount: 100000,
-        remind: true,
-        exclude: false,
-        notes: '',
-        date: '20-8-2024',
-        category: _selectedCategory,
-        type: 'Expense', id: '',
-      );
-      final result = await _transactionAPI.createTransaction(transaction);
+      final transaction = {
+        'wallet': _selectedWallet,
+        'amount': 100000,
+        'remind': true,
+        'exclude': false,
+        'notes': '',
+        'date': '20-8-2024',
+        'category': _selectedCategory,
+        'type': 'Expense',
+      };
+      final result = await _transactionAPI.createTransaction(transaction as Transaction);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
-      _loadTransactions(); // Refresh the list
+      _loadTransactions();
     } catch (e) {
       print('Error creating transaction: $e');
     }
@@ -133,10 +105,72 @@ class _TransactionScreenState extends State<TransactionScreen> {
     try {
       final result = await _transactionAPI.deleteTransaction(transactionId);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
-      _loadTransactions(); // Refresh the list
+      _loadTransactions();
     } catch (e) {
       print('Error deleting transaction: $e');
     }
+  }
+
+  void _showCreateTransactionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Create Transaction', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<String>(
+                value: _selectedWallet,
+                hint: const Text('Select Wallet'),
+                items: _wallets.map((wallet) {
+                  return DropdownMenuItem(
+                    value: wallet.id,
+                    child: Text(wallet.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedWallet = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 16.0),
+              DropdownButton<String>(
+                value: _selectedCategory,
+                hint: const Text('Select Category'),
+                items: _categories.map((category) {
+                  return DropdownMenuItem(
+                    value: category.id,
+                    child: Text(category.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value!;
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () {
+                _createTransaction();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Create', style: TextStyle(color: Colors.teal)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -147,111 +181,87 @@ class _TransactionScreenState extends State<TransactionScreen> {
         title: const Text('Transaction Screen'),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: FutureBuilder<List<Category>>(
-              future: _categoriesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No categories available.'));
-                } else {
-                  final categories = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return ListTile(
-                        title: Text(category.name),
-                        subtitle: Text(category.categoryType),
-                        leading: Image.network(category.categoryIcon),
-                        onTap: () {
-                          setState(() {
-                            _selectedCategory = category.id;
-                            _loadTransactions();
-                          });
-                        },
-                      );
-                    },
-                  );
-                }
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Select Wallet',
+              style: Theme.of(context).textTheme.headline6?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            DropdownButton<String>(
+              value: _selectedWallet,
+              hint: const Text('Select Wallet'),
+              items: _wallets.map((wallet) {
+                return DropdownMenuItem(
+                  value: wallet.id,
+                  child: Text(wallet.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedWallet = value!;
+                  _loadTransactions(); // Load transactions when wallet is changed
+                });
               },
             ),
-          ),
-          Expanded(
-            child: FutureBuilder<WalletResponse>(
-              future: _walletsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.data.content.isEmpty) {
-                  return const Center(child: Text('No wallets available.'));
-                } else {
-                  final wallets = snapshot.data!.data.content;
-                  return ListView.builder(
-                    itemCount: wallets.length,
-                    itemBuilder: (context, index) {
-                      final wallet = wallets[index];
-                      return ListTile(
-                        title: Text(wallet.name),
-                        subtitle: Text('Balance: ${wallet.balance} ${wallet.currency}'),
-                        onTap: () {
-                          setState(() {
-                            _selectedWallet = wallet.id;
-                            _loadTransactions();
-                          });
-                        },
-                      );
-                    },
-                  );
-                }
-              },
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<TransactionListResponse>(
-              future: _transactionsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.content.isEmpty) {
-                  return const Center(child: Text('No transactions available.'));
-                } else {
-                  final transactions = snapshot.data!.content;
-                  return ListView.builder(
-                    itemCount: transactions.length,
-                    itemBuilder: (context, index) {
-                      final transaction = transactions[index];
-                      return ListTile(
-                        title: Text(transaction.amount.toString()),
-                        subtitle: Text(transaction.notes ?? 'No notes'),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            _deleteTransaction(transaction.wallet); // Use correct property
-                          },
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
-            ),
-          ),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: FutureBuilder<dynamic>(
+                future: _transactionsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || (snapshot.data['data'] as List).isEmpty) {
+                    return const Center(child: Text('No transactions available.'));
+                  } else {
+                    final transactionsData = snapshot.data;
+                    final transactions = (transactionsData['data'] as List)
+                        .map((item) => Transaction.fromJson(item))
+                        .toList();
 
-          ElevatedButton(
-            onPressed: _createTransaction,
-            child: const Text('Create Transaction'),
-          ),
-        ],
+                    return ListView.builder(
+                      itemCount: transactions.length,
+                      itemBuilder: (context, index) {
+                        final transaction = transactions[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          elevation: 6.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16.0),
+                            title: Text(
+                              'Amount: ${transaction.amount.toString()}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                            ),
+                            subtitle: Text(transaction.notes ?? 'No notes'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                _deleteTransaction(transaction.id);
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.teal,
+        onPressed: _showCreateTransactionDialog,
+        child: const Icon(Icons.add, size: 30.0),
       ),
     );
   }

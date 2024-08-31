@@ -19,10 +19,8 @@ class TransactionAPI {
     }
   }
 
-  // Get all transactions based on query parameters
-  Future<TransactionResponse> getTransactions({
+  Future<dynamic> getTransactions({
     required String wallet,
-    required String category,
     required String start,
     required String end,
   }) async {
@@ -32,9 +30,6 @@ class TransactionAPI {
         'transactions',
         queryParameters: {
           'wallet': wallet,
-          'category': category,
-          'start': start,
-          'end': end,
         },
         options: Options(
           headers: {
@@ -44,8 +39,9 @@ class TransactionAPI {
         ),
       );
 
+
       if (res.statusCode == 200) {
-        return TransactionResponse.fromJson(res.data);
+        return res.data; // Trả về dữ liệu động
       } else {
         throw Exception('Failed to load transactions');
       }
@@ -54,6 +50,7 @@ class TransactionAPI {
       throw e;
     }
   }
+
 
   // Create a new transaction
   Future<String> createTransaction(Transaction transaction) async {

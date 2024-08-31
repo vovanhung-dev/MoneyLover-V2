@@ -65,8 +65,6 @@ class CategoryAPI {
         ),
       );
 
-      print('API Response: ${res.data}'); // Debug print
-
       if (res.statusCode == 200) {
         return (res.data['data'] as List)
             .map((e) => Category.fromJson(e))

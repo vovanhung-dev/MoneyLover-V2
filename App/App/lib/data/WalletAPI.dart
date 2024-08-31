@@ -33,8 +33,6 @@ class WalletAPI {
         ),
       );
 
-      print('API Response: ${res.data}');
-
       if (res.statusCode == 200) {
         return WalletResponse.fromJson(res.data);
       } else {

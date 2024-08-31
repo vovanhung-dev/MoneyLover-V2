@@ -1,51 +1,48 @@
+import '../response/CategoryResponse.dart';
+
 class Transaction {
-  final String id; // Add this line if necessary
-  final String wallet;
+  final String id;
   final double amount;
   final bool remind;
   final bool exclude;
-  final String notes;
+  final String? notes;
   final String date;
-  final String category;
-  final String type; // Should be "Expense" or "Income"
+  final Category? category;
+  final String userId;
 
   Transaction({
-    required this.id, // Add this line if necessary
-    required this.wallet,
+    required this.id,
     required this.amount,
     required this.remind,
     required this.exclude,
-    required this.notes,
+    this.notes,
     required this.date,
-    required this.category,
-    required this.type,
+    this.category,
+    required this.userId,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      id: json['id'], // Add this line if necessary
-      wallet: json['wallet'],
-      amount: json['amount'].toDouble(),
-      remind: json['remind'],
-      exclude: json['exclude'],
-      notes: json['notes'],
-      date: json['date'],
-      category: json['category'],
-      type: json['type'],
+      id: json['id'] ?? '',
+      amount: json['amount']?.toDouble() ?? 0.0,
+      remind: json['remind'] ?? false,
+      exclude: json['exclude'] ?? false,
+      notes: json['notes'] ?? '',
+      date: json['date'] ?? '',
+      category: json['category'] != null ? Category.fromJson(json['category']) : null,
+      userId: json['user']?['id'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id, // Add this line if necessary
-      'wallet': wallet,
+      'id': id,
       'amount': amount,
       'remind': remind,
       'exclude': exclude,
       'notes': notes,
       'date': date,
       'category': category,
-      'type': type,
     };
   }
 }

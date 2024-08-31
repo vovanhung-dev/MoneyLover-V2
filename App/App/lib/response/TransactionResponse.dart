@@ -1,3 +1,6 @@
+import '../model/user.dart';
+import 'CategoryResponse.dart';
+
 class TransactionResponse {
   final String id;
   final double amount;
@@ -21,14 +24,14 @@ class TransactionResponse {
 
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     return TransactionResponse(
-      id: json['id'],
-      amount: json['amount'].toDouble(),
-      remind: json['remind'],
-      exclude: json['exclude'],
-      notes: json['notes'],
-      category: Category.fromJson(json['category']),
-      date: json['date'],
-      user: User.fromJson(json['user']),
+      id: json['id'] ?? '',
+      amount: json['amount']?.toDouble() ?? 0.0,
+      remind: json['remind'] ?? false,
+      exclude: json['exclude'] ?? false,
+      notes: json['notes'] ?? '',
+      category: json['category'] != null ? Category.fromJson(json['category']) : Category(id: '', name: '', categoryType: '', categoryIcon: '', defaultIncome: false, debtLoanType: 0),
+      date: json['date'] ?? '',
+      user: json['user'] != null ? User.fromJson(json['user']) : User(id: '', username: '', email: '', enable: false),
     );
   }
 
@@ -42,78 +45,6 @@ class TransactionResponse {
       'category': category.toJson(),
       'date': date,
       'user': user.toJson(),
-    };
-  }
-}
-
-class Category {
-  final String id;
-  final String name;
-  final String categoryType;
-  final String categoryIcon;
-  final bool defaultIncome;
-  final int debtLoanType;
-
-  Category({
-    required this.id,
-    required this.name,
-    required this.categoryType,
-    required this.categoryIcon,
-    required this.defaultIncome,
-    required this.debtLoanType,
-  });
-
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id'],
-      name: json['name'],
-      categoryType: json['categoryType'],
-      categoryIcon: json['categoryIcon'],
-      defaultIncome: json['defaultIncome'],
-      debtLoanType: json['debt_loan_type'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'categoryType': categoryType,
-      'categoryIcon': categoryIcon,
-      'defaultIncome': defaultIncome,
-      'debt_loan_type': debtLoanType,
-    };
-  }
-}
-
-class User {
-  final String id;
-  final String username;
-  final String email;
-  final bool enable;
-
-  User({
-    required this.id,
-    required this.username,
-    required this.email,
-    required this.enable,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      username: json['username'],
-      email: json['email'],
-      enable: json['_enable'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-      'email': email,
-      '_enable': enable,
     };
   }
 }

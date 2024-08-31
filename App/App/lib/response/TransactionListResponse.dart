@@ -8,7 +8,7 @@ class TransactionListResponse {
   });
 
   factory TransactionListResponse.fromJson(Map<String, dynamic> json) {
-    var list = json['content'] as List;
+    var list = json['data'] as List;
     List<Transaction> contentList = list.map((i) => Transaction.fromJson(i)).toList();
 
     return TransactionListResponse(
