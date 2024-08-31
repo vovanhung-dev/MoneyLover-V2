@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/user.dart';
+import '../Category/CategoryScreen.dart';
 
 class Detail extends StatefulWidget {
   const Detail({Key? key}) : super(key: key);
@@ -89,6 +90,27 @@ class _DetailState extends State<Detail> {
                     Icons.person,
                     "Tên đăng nhập",
                     user.username!,
+                  ),
+                  const SizedBox(height: 30),
+                  // Button to navigate to CategoryScreen
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryScreen(), // Ensure you have this screen implemented
+                        ),
+                      );
+                    },
+                    child: Text('Go to Categories'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      textStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),

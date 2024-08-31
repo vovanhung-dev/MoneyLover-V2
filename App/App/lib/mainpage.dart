@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shoehubapp/page/Bill/GroupChatScreen.dart';
 import 'package:shoehubapp/page/Budget/BudgetScreen.dart';
 import 'package:shoehubapp/page/Category/CategoryScreen.dart';
+import 'package:shoehubapp/page/Transaction/TransactionScreen.dart';
 import 'package:shoehubapp/page/Wallet/WalletScreen.dart';
 import 'package:shoehubapp/page/StatisticsScreen.dart';
 import 'package:shoehubapp/page/Chatbox/chat_screen.dart';
@@ -77,12 +78,13 @@ class _MainpageState extends State<Mainpage> {
         widget = GroupChatScreen();
         break;
       case 5:
-        nameWidgets = "Profile";
-        widget = const Detail();
+
+        nameWidgets = "Transactions";
+        widget =  TransactionScreen();
         break;
       case 6:
-        nameWidgets = "Category";
-        widget =  CategoryScreen();
+        nameWidgets = "Profile";
+        widget = const Detail();
         break;
       default:
         nameWidgets = "None";
@@ -191,12 +193,12 @@ class _MainpageState extends State<Mainpage> {
             label: 'Chat',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.ac_unit_sharp ),
+            label: 'Transaction',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.ac_unit_sharp),
-            label: 'Category',
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
