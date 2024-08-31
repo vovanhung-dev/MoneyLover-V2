@@ -1,16 +1,14 @@
 import 'dart:convert';
-
+import 'package:dio/dio.dart';
+import 'package:shoehubapp/data/sharepre.dart';
 
 import '../model/Signup.dart';
 import '/model/user.dart';
-import 'package:dio/dio.dart';
-
 import '../response/login_response.dart';
-import 'sharepre.dart';
 
 class API {
   final Dio _dio = Dio();
-  String baseUrl = "http://172.27.0.1:8082";
+  String baseUrl = "http://192.168.1.3:8082";
 
   API() {
     _dio.options.baseUrl = "$baseUrl/api/v1/";
@@ -21,6 +19,17 @@ class API {
 
 class APIRepository {
   API api = API();
+  String? _token;
+
+
+  Future<void> setToken() async {
+    try {
+      _token = await getToken();
+      api.sendRequest.options.headers['Authorization'] = 'Bearer $_token';
+    } catch (e) {
+      print('Error setting token: $e');
+    }
+  }
 
   Map<String, dynamic> header(String token) {
     return {
@@ -34,7 +43,7 @@ class APIRepository {
   Future<String> register(Signup signup) async {
     try {
       final body = jsonEncode(signup.toJson());
-      Response res = await  api.sendRequest.post(
+      Response res = await api.sendRequest.post(
         'auth/register',
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -56,15 +65,12 @@ class APIRepository {
   }
 
   Future<LoginResponse?> login(String email, String password) async {
-    print("da vo");
     try {
-      // Tạo body cho yêu cầu đăng nhập
       final body = jsonEncode({
         'email': email,
         'password': password,
       });
 
-      // Gửi yêu cầu POST đến API
       Response res = await api.sendRequest.post(
         'auth/login',
         options: Options(
@@ -73,37 +79,170 @@ class APIRepository {
         data: body,
       );
 
-      // In ra mã trạng thái HTTP và nội dung phản hồi
-      print("Response status code: ${res.statusCode}");
-      print("Response data: ${res.data}");
-
       if (res.statusCode == 200) {
-        // Nếu mã trạng thái là 200 (OK), phân tích dữ liệu và trả về đối tượng LoginResponse
         final Map<String, dynamic> data = res.data;
         final loginResponse = LoginResponse.fromJson(data);
-        print("Login successful");
-        print("Access token: ${loginResponse?.accessToken}");
-        print("Refresh token: ${loginResponse?.refreshToken}");
-        print("User: ${loginResponse?.user}");
         return loginResponse;
       } else if (res.statusCode == 400) {
-        // Nếu mã trạng thái là 400 (Bad Request), thông báo lỗi
-        print("Login failed: Unregistered account or wrong password");
-        return null; // Tài khoản chưa được đăng ký hoặc mật khẩu không đúng
+        return null;
       } else if (res.statusCode == 403) {
-        // Nếu mã trạng thái là 403 (Forbidden), thông báo lỗi
-        print("Login failed: Forbidden access. Check your credentials or permissions.");
-        return null; // Quyền truy cập bị từ chối
+        return null;
       } else {
-        // Nếu mã trạng thái không phải là 200, 400, hoặc 403, thông báo lỗi chung
-        print("Login failed with status code: ${res.statusCode}");
-        return null; // Đăng nhập thất bại
+        return null;
       }
     } catch (ex) {
-      // Xử lý lỗi và in ra thông báo lỗi
       print("Exception occurred: $ex");
-      return null; // Xử lý lỗi
+      return null;
     }
   }
 
+  Future<String> changePassword(String email, String oldPassword, String newPassword, String confirmPassword) async {
+    try {
+      final body = jsonEncode({
+        'email': email,
+        'oldPassword': oldPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      });
+
+      Response res = await api.sendRequest.post(
+        'auth/changePassword',
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: body,
+      );
+
+      if (res.statusCode == 200) {
+        return "Password changed successfully";
+      } else if (res.statusCode == 400) {
+        return "Invalid request data";
+      } else if (res.statusCode == 401) {
+        return "Unauthorized request";
+      } else {
+        return "Password change failed";
+      }
+    } catch (ex) {
+      print(ex);
+      return "An error occurred";
+    }
+  }
+
+  // New API methods
+
+  Future<String> forgotPassword(String email) async {
+    try {
+      final body = jsonEncode({'email': email});
+
+      Response res = await api.sendRequest.post(
+        'auth/forgot',
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: body,
+      );
+
+      if (res.statusCode == 200) {
+        return "Password reset email sent";
+      } else if (res.statusCode == 400) {
+        return "Invalid email";
+      } else {
+        return "Forgot password request failed";
+      }
+    } catch (ex) {
+      print(ex);
+      return "An error occurred";
+    }
+  }
+
+  // Function to get user details by ID or email
+  Future<Map<String, dynamic>> getUserDetails(String idOrEmail) async {
+    await setToken(); // Ensure the token is set for authorization
+    try {
+      final Response res = await api.sendRequest.post(
+        'user/' + idOrEmail,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $_token',
+          },
+        ),
+      );
+
+      if (res.statusCode == 200) {
+        return res.data['data']; // Correctly returning the user data
+      } else {
+        throw Exception('Failed to fetch user details');
+      }
+    } catch (e) {
+      print('Error fetching user details: $e');
+      throw e;
+    }
+  }
+
+// Function to submit OTP for password reset
+  Future<String> submitOtp(String email, String otp) async {
+    try {
+      // Fetch user details using the provided email
+      final userDetails = await getUserDetails(email);
+      print(userDetails);
+      final userId = userDetails['id']; // Get the user ID from the details
+      print(userId);
+      final body = jsonEncode({
+        'account': userId,
+        'otp': otp,
+      });
+
+      Response res = await api.sendRequest.post(
+        'auth/submitOtp',
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: body,
+      );
+
+      if (res.statusCode == 200) {
+        return "OTP verified successfully";
+      } else if (res.statusCode == 400) {
+        return "Invalid OTP";
+      } else {
+        return "OTP submission failed";
+      }
+    } catch (ex) {
+      print('Error submitting OTP: $ex');
+      return "An error occurred";
+    }
+  }
+
+
+  Future<String> changePasswordForgot(String email, String password) async {
+    // Fetch user details using the provided email
+    final userDetails = await getUserDetails(email);
+    final userId = userDetails['id']; // Get the user ID from the details
+    try {
+      final body = jsonEncode({
+        'account': userId,
+        'password': password,
+      });
+
+      Response res = await api.sendRequest.post(
+        'auth/changePasswordForgot',
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: body,
+      );
+
+      if (res.statusCode == 200) {
+        return "Password changed successfully";
+      } else if (res.statusCode == 400) {
+        return "Invalid request data";
+      } else {
+        return "Password change failed";
+      }
+    } catch (ex) {
+      print(ex);
+      return "An error occurred";
+    }
+  }
 }
